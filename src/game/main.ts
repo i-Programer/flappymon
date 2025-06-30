@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { GameScene } from './scenes/GameScene';
 
 export const createPhaserGame = (parentId: string) => {
-  return new Phaser.Game({
+  const game = new Phaser.Game({
     type: Phaser.AUTO,
     width: window.innerWidth,
     height: window.innerHeight,
@@ -21,4 +21,10 @@ export const createPhaserGame = (parentId: string) => {
       autoCenter: Phaser.Scale.CENTER_BOTH,
     },
   });
+
+  window.addEventListener('resize', () => {
+    game.scale.resize(window.innerWidth, window.innerHeight);
+  });
+
+  return game;
 };
