@@ -8,7 +8,7 @@ export class MainMenuScene extends Phaser.Scene {
   create() {
     const { width, height } = this.scale;
 
-    const title = this.add.text(width / 2, 80, 'FlappyChain', {
+    const title = this.add.text(width / 2, 80, 'Flappymon', {
       fontSize: '48px',
       color: '#ffffff',
     }).setOrigin(0.5);
