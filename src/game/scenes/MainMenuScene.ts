@@ -1,4 +1,6 @@
 import Phaser from 'phaser';
+import { useWalletStore } from '@/store/walletStore'
+
 
 export class MainMenuScene extends Phaser.Scene {
   constructor() {
@@ -14,28 +16,31 @@ export class MainMenuScene extends Phaser.Scene {
     }).setOrigin(0.5);
 
     // Connect Wallet
-    const connectButton = this.add.text(width / 2, 200, 'Connect Wallet', {
-      fontSize: '28px',
-      backgroundColor: '#4444aa',
-      padding: { x: 20, y: 10 },
+    const address = useWalletStore.getState().address;
+    const statusText = this.add.text(width / 2, 140, address 
+      ? `Wallet Connected: ${address.slice(0, 6)}...`
+      : 'Wallet Not Connected', {
+      fontSize: '20px',
       color: '#ffffff',
-    }).setOrigin(0.5).setInteractive();
-
-    connectButton.on('pointerdown', () => {
-      console.log('TODO: Connect Wallet');
-    });
+    }).setOrigin(0.5);
 
     // Start Button
     const startButton = this.add.text(width / 2, 280, 'Start Game', {
       fontSize: '32px',
-      backgroundColor: '#00aa00',
+      backgroundColor: address ? '#00aa00' : '#777',
       padding: { x: 20, y: 10 },
       color: '#ffffff',
     }).setOrigin(0.5).setInteractive();
 
-    startButton.on('pointerdown', () => {
-      this.scene.start('GameScene');
-    });
+    if (address) {
+      startButton.on('pointerdown', () => {
+        this.scene.start('GameScene');
+      });
+    } else {
+      startButton.on('pointerdown', () => {
+        alert('Connect your wallet first.');
+      });
+    }
 
     // Settings Button
     const settingsButton = this.add.text(width / 2, 360, 'Settings', {

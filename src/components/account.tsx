@@ -1,16 +1,14 @@
-import { useAccount, useDisconnect, useEnsAvatar, useEnsName } from 'wagmi'
+import { useAccount } from 'wagmi'
+import { useWalletStore } from '@/store/walletStore'
+import { useEffect } from 'react'
 
 export function Account() {
   const { address } = useAccount()
-  const { disconnect } = useDisconnect()
-  const { data: ensName } = useEnsName({ address })
-  const { data: ensAvatar } = useEnsAvatar({ name: ensName! })
+  const setAddress = useWalletStore((state) => state.setAddress)
 
-  return (
-    <div>
-      {ensAvatar && <img alt="ENS Avatar" src={ensAvatar} />}
-      {address && <div >{ensName ? `${ensName} (${address})` : address}</div>}
-      <button onClick={() => disconnect()}>Disconnect</button>
-    </div>
-  )
+  useEffect(() => {
+    setAddress(address ?? null)
+  }, [address, setAddress])
+
+  return null
 }
