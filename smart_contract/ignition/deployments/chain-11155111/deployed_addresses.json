@@ -1,0 +1,10 @@
+{
+  "GachaModule#Flappymon": "0xe45C8F3C1284eb898023da2c6F4Cd5Ab25Cd26C7",
+  "GachaModule#GachaMachine": "0x1Dbd1396B3010bb69387C8A6cE2B68dF54c367d6",
+  "GachaMachineModule#Flappymon": "0xF5851f2f61E196C8b953B6FF43E776d22f9a3e7d",
+  "GachaMachineModule#GachaMachine": "0xfF1CAeE6506D217Ff34bb8240C8c0D8523B8c6eF",
+  "GachaMachineModuleV2#Flappymon": "0xF7722B7AAC85e5e357a7fE01B7ef8293D24C05d5",
+  "GachaMachineModuleV2#GachaMachine": "0x00822CD9C3f1184e9C5F1C930e317c8BbAa01956",
+  "FLAPTokenModule#FLAPTOKEN": "0x7DbaBb6EAeEadA00FC4110C37BD7e343a4AddfFE",
+  "FLAPTokenModuleV2#FLAPTOKEN": "0x416A0DB4cD78A4d822FBbD998e51199b1927aa0C"
+}
