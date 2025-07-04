@@ -15,6 +15,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: 'Method Not Allowed' })
   }
 
+  console.log('[DEBUG] BACKEND_WALLET in API:', BACKEND_WALLET);
+  console.log('[DEBUG] Wallet client account:', walletClient.account.address);
+
+
   try {
     const { address, signature, timestamp, permit } = req.body
 
@@ -31,6 +35,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // ✅ Step 1: Parse permit signature
     const { v, r, s } = parseSignature(permit.signature)
+
+    console.log('[PERMIT] Calling permit with:', {
+      owner: address,
+      spender: BACKEND_WALLET,
+      value: FLAP_COST.toString(),
+      deadline: permit.deadline.toString(),
+      v: v,
+      r: r,
+      s: s,
+    })
+    
 
     // ✅ Step 2: Call permit() to approve backend to spend 50 $FLAP
     await walletClient.writeContract({
