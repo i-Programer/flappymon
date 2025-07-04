@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { GameScene } from './scenes/GameScene';
 import { MainMenuScene } from './scenes/MainMenuScene';
+import { CharacterScene } from './scenes/CharacterScene';
 
 export const createPhaserGame = (parentId: string) => {
   const game = new Phaser.Game({
@@ -8,7 +9,7 @@ export const createPhaserGame = (parentId: string) => {
     width: window.innerWidth,
     height: window.innerHeight,
     backgroundColor: '#87CEEB', // Light sky blue (customize this)
-    scene: [MainMenuScene, GameScene],
+    scene: [MainMenuScene, GameScene, CharacterScene],
     parent: parentId,
     physics: {
         default: 'arcade',

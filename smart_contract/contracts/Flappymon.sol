@@ -3,12 +3,15 @@ pragma solidity ^0.8.27;
 
 import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
 contract Flappymon is ERC721, Ownable {
-    uint256 public nextTokenId = 0;
+    using Strings for uint256;
+
+    uint256 public nextTokenId;
     string public baseTokenURI;
 
-    // Compact rarity mapping using uint8 saves gas
+    // Compact rarity mapping using uint8
     mapping(uint256 => uint8) public tokenRarity;
 
     constructor(address initialOwner, string memory _baseTokenURI)
@@ -23,17 +26,37 @@ contract Flappymon is ERC721, Ownable {
     }
 
     function safeMint(address to, uint8 rarity) external onlyOwner returns (uint256) {
-        uint256 tokenId = nextTokenId++;
+        uint256 tokenId = nextTokenId;
+        nextTokenId++;
+
         _mint(to, tokenId);
         tokenRarity[tokenId] = rarity;
+
         return tokenId;
     }
 
-    function _baseURI() internal view override returns (string memory) {
-        return baseTokenURI;
+    // 👇 Construct metadata URI based on tokenId (e.g., 0.json, 1.json)
+    function tokenURI(uint256 tokenId) public view override returns (string memory) {
+        require(_ownerOf(tokenId) != address(0), "Token does not exist");
+        return string(abi.encodePacked(baseTokenURI, tokenId.toString(), ".json"));
     }
 
-    // Readable enums for frontend reference
+    function tokensOfOwner(address owner) external view returns (uint256[] memory) {
+        uint256 count = balanceOf(owner);
+        uint256[] memory result = new uint256[](count);
+        uint256 index = 0;
+
+        for (uint256 i = 0; i < nextTokenId; i++) {
+            if (_ownerOf(i) == owner) {
+                result[index] = i;
+                index++;
+            }
+        }
+
+        return result;
+    }
+
+
     function getSkillSlots(uint8 rarity) public pure returns (uint8) {
         if (rarity == 0) return 1; // Common
         if (rarity == 1) return 2; // Rare
