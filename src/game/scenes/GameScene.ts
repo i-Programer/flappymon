@@ -1,4 +1,6 @@
 import Phaser from 'phaser';
+import { useFlappymonStore } from '@/store/flappymonStore'
+import { useWalletStore } from '@/store/walletStore'
 
 const PIPE_SPEED = -200;
 const PIPE_DISTANCE = 150; // Gap between top and bottom pipe
@@ -32,7 +34,7 @@ export class GameScene extends Phaser.Scene {
     this.scoreText.setText(`Score: ${this.score}`);
   }
 
-  private handleGameOver() {
+  private async handleGameOver() {
     if (this.isGameOver) return;
     this.isGameOver = true;
 
@@ -53,6 +55,21 @@ export class GameScene extends Phaser.Scene {
     // Show game over UI
     this.gameOverUI.setVisible(true);
     this.gameOverUI.setDepth(1000); // Force it to render above everything else
+
+    const address = useWalletStore.getState().address;
+    if (!address) return; // Or show a toast/warning
+    const score = this.score // or wherever you track it
+    await fetch('/api/reward', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ score, address }),
+    }).then((res) => {
+      if (!res.ok) throw new Error('Reward failed');
+      console.log('[Reward] Sent successfully');
+    }).catch((err) => {
+      console.error('[Reward Error]', err);
+    });
+    
 
     this.scoreText.setText(`Final Score: ${this.score}`);
   }
@@ -173,14 +190,26 @@ export class GameScene extends Phaser.Scene {
     this.score = 0;
   }
   
-
   create() {
     // Enable Arcade physics
     this.physics.world.setBounds(0, 0, this.scale.width, this.scale.height);
 
+    const selected = useFlappymonStore.getState().selected
+
+    let color = 0xffffff // fallback if nothing is selected
+
+    if (selected?.rarity !== undefined) {
+      switch (selected.rarity) {
+        case 0: color = 0x4caf50; break; // Common - green
+        case 1: color = 0x9c27b0; break; // Rare - blue
+        case 2: color = 0x2196f3; break; // Epic - purple
+        case 3: color = 0xffc107; break; // Legendary - gold
+      }
+    }
+
     // Create a simple rectangle texture for the player
     const graphics = this.add.graphics();
-    graphics.fillStyle(0xffd700, 1); // Gold color
+    graphics.fillStyle(color, 1); // Gold color
     graphics.fillCircle(10, 10, 10);
     graphics.generateTexture('player', 20, 20);
     graphics.destroy();

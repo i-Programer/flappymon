@@ -23,9 +23,10 @@ export class CharacterScene extends Phaser.Scene {
     }
 
     const flappymons = await getUserFlappymons(address)
+    // console.log(flappymons)
 
     if (flappymons.length === 0) {
-      this.add.text(100, 100, 'You don’t own any Flappymon yet.', {
+      this.add.text(100, 100, 'You dont own any Flappymon yet.', {
         fontSize: '20px',
         color: '#ffffff',
       })

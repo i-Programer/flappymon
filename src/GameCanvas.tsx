@@ -44,74 +44,89 @@ export default function GameCanvas() {
   }, [address])
   
   async function rollGacha() {
-    if (!address || !signMessageAsync || !signTypedDataAsync) return
+    if (!address || !signMessageAsync || !signTypedDataAsync) return;
   
-    console.log('[Gacha] Starting roll')
+    console.log('[Gacha] Starting roll');
+
+    const balance = await publicClient.readContract({
+      address: FLAP_ADDRESS,
+      abi: flapAbi.abi,
+      functionName: 'balanceOf',
+      args: [address],
+    }) as bigint
   
-    const timestamp = Date.now()
-    const message = `Roll gacha at ${timestamp}`
-    const signature = await signMessageAsync({ message })
+    if (balance < FLAP_COST) {
+      alert('Not enough $FLAP to roll gacha! You need at least 50 $FLAP.');
+      return;
+    }
   
-    console.log('[Gacha] Got message signature:', signature)
+    console.log('[Gacha] $FLAP Balance:', balance.toString());
+    
+    const timestamp = Date.now();
+    const message = `Roll gacha at ${timestamp}`;
+  
+    let signature: string;
+    try {
+      signature = await signMessageAsync({ message });
+    } catch (err: any) {
+      if (err.name === 'UserRejectedRequestError') {
+        alert('You rejected the signature request.');
+        return;
+      }
+      console.error('[Gacha] signMessageAsync failed', err);
+      alert('Failed to sign message.');
+      return;
+    }
+  
+    console.log('[Gacha] Got message signature:', signature);
   
     const nonce = await publicClient.readContract({
       address: FLAP_ADDRESS,
       abi: flapAbi.abi,
       functionName: 'nonces',
       args: [address],
-    }) as bigint
+    }) as bigint;
   
-    const deadline = Math.floor(Date.now() / 1000) + 3600
-    console.log('[Gacha] Nonce:', nonce, 'Deadline:', deadline)
-
-    console.log('[Gacha] About to sign typed data:', {
-      domain: {
-        name: 'FLAPTOKEN',
-        version: '1',
-        chainId: chain?.id ?? 11155111,
-        verifyingContract: FLAP_ADDRESS,
-      },
-      message: {
-        owner: address,
-        spender: BACKEND_WALLET,
-        value: FLAP_COST,
-        nonce: BigInt(nonce),
-        deadline: BigInt(deadline),
+    const deadline = Math.floor(Date.now() / 1000) + 3600;
+  
+    let signatureTyped: string;
+    try {
+      signatureTyped = await signTypedDataAsync({
+        domain: {
+          name: 'FLAPTOKEN',
+          version: '1',
+          chainId: chain?.id ?? 11155111,
+          verifyingContract: FLAP_ADDRESS,
+        },
+        types: {
+          Permit: [
+            { name: 'owner', type: 'address' },
+            { name: 'spender', type: 'address' },
+            { name: 'value', type: 'uint256' },
+            { name: 'nonce', type: 'uint256' },
+            { name: 'deadline', type: 'uint256' },
+          ],
+        },
+        message: {
+          owner: address,
+          spender: BACKEND_WALLET,
+          value: FLAP_COST,
+          nonce: BigInt(nonce),
+          deadline: BigInt(deadline),
+        },
+        primaryType: 'Permit',
+      });
+    } catch (err: any) {
+      if (err.name === 'UserRejectedRequestError') {
+        alert('You rejected the permit signature.');
+        return;
       }
-    })    
-
-    if (!FLAP_ADDRESS || !BACKEND_WALLET || !address) {
-      console.error('[Gacha] Invalid EIP-2612 addresses:', { FLAP_ADDRESS, BACKEND_WALLET, address })
-      return
-    }    
+      console.error('[Gacha] signTypedDataAsync failed', err);
+      alert('Failed to sign permit.');
+      return;
+    }
   
-    const signatureTyped = await signTypedDataAsync({
-      domain: {
-        name: 'FLAPTOKEN',
-        version: '1',
-        chainId: chain?.id ?? 11155111,
-        verifyingContract: FLAP_ADDRESS,
-      },
-      types: {
-        Permit: [
-          { name: 'owner', type: 'address' },
-          { name: 'spender', type: 'address' },
-          { name: 'value', type: 'uint256' },
-          { name: 'nonce', type: 'uint256' },
-          { name: 'deadline', type: 'uint256' },
-        ],
-      },
-      message: {
-        owner: address,
-        spender: BACKEND_WALLET,
-        value: FLAP_COST,
-        nonce: BigInt(nonce),
-        deadline: BigInt(deadline),
-      },
-      primaryType: 'Permit',
-    })
-  
-    console.log('[Gacha] Got typed signature:', signatureTyped)
+    console.log('[Gacha] Got typed signature:', signatureTyped);
   
     const res = await fetch('/api/gacha/roll', {
       method: 'POST',
@@ -128,23 +143,22 @@ export default function GameCanvas() {
           signature: signatureTyped,
         },
       }),
-    })
+    });
   
-    console.log('[Gacha] Sent fetch request to /api/gacha/roll')
-  
-    const data = await res.json()
-    console.log('[Gacha] Got response:', data)
+    const data = await res.json();
   
     if (!res.ok) {
-      const errorEvent = new CustomEvent('gacha:fail', { detail: data.error })
-      window.dispatchEvent(errorEvent)
-      return
+      if (data.error === 'User rejected the transaction') {
+        alert('You rejected the gacha transaction.');
+      } else {
+        alert('Something went wrong: ' + data.error);
+      }
+      return;
     }
   
-    const successEvent = new CustomEvent('gacha:result', { detail: data })
-    window.dispatchEvent(successEvent)
-  }
-  
+    const successEvent = new CustomEvent('gacha:result', { detail: data });
+    window.dispatchEvent(successEvent);
+  }  
 
   async function claimFaucet() {
     if (!address || !signMessageAsync) return

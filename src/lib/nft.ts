@@ -11,19 +11,10 @@ export async function getUserFlappymons(address: `0x${string}`) {
     functionName: 'tokensOfOwner',
     args: [address],
   }) as bigint[]
+  // console.log(tokenIds)
 
   const metadataList = await Promise.all(
     tokenIds.map(async (id) => {
-      const tokenUri = await publicClient.readContract({
-        address: FLAPPY_ADDRESS,
-        abi: flappymonAbi.abi,
-        functionName: 'tokenURI',
-        args: [id],
-      }) as string
-
-      const res = await fetch(tokenUri)
-      const metadata = await res.json()
-
       const rarity = await publicClient.readContract({
         address: FLAPPY_ADDRESS,
         abi: flappymonAbi.abi,
@@ -31,7 +22,18 @@ export async function getUserFlappymons(address: `0x${string}`) {
         args: [id],
       }) as number
       
+      const tokenUri = await publicClient.readContract({
+        address: FLAPPY_ADDRESS,
+        abi: flappymonAbi.abi,
+        functionName: 'tokenURI',
+        args: [id],
+      }) as string
 
+      console.log(tokenUri)
+
+      const res = await fetch(tokenUri)
+      const metadata = await res.json()
+    
       return { tokenId: Number(id), rarity, ...metadata }
     })
   )
