@@ -23,7 +23,6 @@ export class CharacterScene extends Phaser.Scene {
     }
 
     const flappymons = await getUserFlappymons(address)
-    // console.log(flappymons)
 
     if (flappymons.length === 0) {
       this.add.text(100, 100, 'You dont own any Flappymon yet.', {
@@ -32,6 +31,8 @@ export class CharacterScene extends Phaser.Scene {
       })
       return
     }
+
+    setSelected(flappymons[0])
 
     this.add.text(this.scale.width / 2, 60, 'Select Your Flappymon', {
       fontSize: '32px',
@@ -45,7 +46,7 @@ export class CharacterScene extends Phaser.Scene {
       const y = 150 + Math.floor(i / 3) * 250
 
       // Load image dynamically
-      this.load.image(`nft-${nft.tokenId}`, nft.image)
+      // this.load.image(`nft-${nft.tokenId}`, nft.image)
       this.load.once('complete', () => {
         const sprite = this.add.image(x, y, `nft-${nft.tokenId}`).setScale(0.4)
         sprite.setInteractive({ useHandCursor: true })

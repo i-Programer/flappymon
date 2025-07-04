@@ -59,19 +59,39 @@ export class GameScene extends Phaser.Scene {
     const address = useWalletStore.getState().address;
     if (!address) return; // Or show a toast/warning
     const score = this.score // or wherever you track it
-    await fetch('/api/reward', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ score, address }),
-    }).then((res) => {
-      if (!res.ok) throw new Error('Reward failed');
-      console.log('[Reward] Sent successfully');
-    }).catch((err) => {
-      console.error('[Reward Error]', err);
-    });
     
+    if (address && score > 0) {
+      try {
+        const payload = { score, address };
+        console.log('[Reward] Sending payload:', payload);
+    
+        const res = await fetch('/api/reward', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+    
+        const text = await res.text();
+        console.log('[Reward] status:', res.status, 'body:', text);
+    
+        if (!res.ok) throw new Error(text || 'Unknown reward error');
+        console.log('[Reward] success');
+      } catch (err) {
+        console.error('[Reward Error]', err);
+      }
+    } else {
+      console.log('[Reward] Skipped - score is 0 or no wallet connected');
+    }
+    
+    this.scoreText.setVisible(false);
 
-    this.scoreText.setText(`Final Score: ${this.score}`);
+    const finalScoreText = this.add.text(this.scale.width / 2, this.scale.height / 2 - 30, `Final Score: ${this.score}`, {
+      fontSize: '28px',
+      color: '#ffffff',
+    }).setOrigin(0.5);
+    
+    this.gameOverUI.add(finalScoreText);
+
   }
 
   private spawnPipePair() {
@@ -149,8 +169,9 @@ export class GameScene extends Phaser.Scene {
     }).setOrigin(0.5).setInteractive();
   
     restartButton.on('pointerdown', () => {
-      this.scene.restart();
-    });
+      this.textures.remove('player') // Clean up old player texture (optional)
+      this.scene.restart()
+    })
   
     // Main Menu button (hook up later)
     const mainMenuButton = this.add.text(width / 2, height / 2 + 60, 'Main Menu', {
@@ -201,21 +222,24 @@ export class GameScene extends Phaser.Scene {
     if (selected?.rarity !== undefined) {
       switch (selected.rarity) {
         case 0: color = 0x4caf50; break; // Common - green
-        case 1: color = 0x9c27b0; break; // Rare - blue
-        case 2: color = 0x2196f3; break; // Epic - purple
+        case 1: color = 0x2196f3; break; // Rare - blue
+        case 2: color = 0x9c27b0; break; // Epic - purple
         case 3: color = 0xffc107; break; // Legendary - gold
       }
     }
 
-    // Create a simple rectangle texture for the player
-    const graphics = this.add.graphics();
-    graphics.fillStyle(color, 1); // Gold color
-    graphics.fillCircle(10, 10, 10);
-    graphics.generateTexture('player', 20, 20);
-    graphics.destroy();
+    // ✅ Make unique texture name per session to avoid conflict or reuse
+    const textureKey = `player-${Date.now()}`
 
-    // Create the player using the generated texture
-    this.player = this.physics.add.sprite(100, this.scale.height / 2, 'player');
+    const graphics = this.add.graphics()
+    graphics.fillStyle(color, 1)
+    graphics.fillCircle(10, 10, 10)
+    graphics.generateTexture(textureKey, 20, 20)
+    graphics.destroy()
+
+    // ✅ Use the new unique texture key
+    this.player = this.physics.add.sprite(100, this.scale.height / 2, textureKey)
+
 
     // Player physics properties
     this.player.setCollideWorldBounds(true);

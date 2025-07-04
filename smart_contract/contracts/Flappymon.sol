@@ -35,10 +35,10 @@ contract Flappymon is ERC721, Ownable {
         return tokenId;
     }
 
-    // 👇 Construct metadata URI based on tokenId (e.g., 0.json, 1.json)
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
         require(_ownerOf(tokenId) != address(0), "Token does not exist");
-        return string(abi.encodePacked(baseTokenURI, tokenId.toString(), ".json"));
+        uint8 rarity = tokenRarity[tokenId];
+        return string(abi.encodePacked(baseTokenURI, Strings.toString(rarity), ".json"));
     }
 
     function tokensOfOwner(address owner) external view returns (uint256[] memory) {
