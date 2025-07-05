@@ -177,14 +177,14 @@ export default function GameCanvas() {
       const data = await res.json()
 
       if (!res.ok) {
-        alert('Gagal klaim faucet: ' + data.error)
+        alert('Failed to claim: ' + data.error)
       } else {
-        alert('Berhasil klaim 500 $FLAP!')
+        alert('Claim Successfuly')
         setFaucetClaimed(true)
       }
     } catch (err) {
       console.error(err)
-      alert('Klaim faucet gagal.')
+      alert('Failed to claim.')
     } finally {
       setFaucetLoading(false)
     }
