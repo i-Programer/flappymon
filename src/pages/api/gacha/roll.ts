@@ -4,7 +4,7 @@ import { mintNFT, transferFlapFromUser } from '@/lib/web3'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
 import flapAbi from '@/abi/FLAPTOKEN.json'
-import { walletClient, publicClient } from '@/lib/walletClient'
+import { walletClient, publicClient } from '@/lib/walletClient.server'
 
 const FLAP_COST = parseUnits('50', 18) // 50 $FLAP
 const FLAP_ADDRESS = process.env.NEXT_PUBLIC_FLAP_TOKEN_ADDRESS as `0x${string}`

@@ -8,6 +8,10 @@ body {
     font-family: Arial, Helvetica, sans-serif;
 }
 
+canvas.ui-blocked {
+    pointer-events: none;
+}  
+
 #app {
     width: 100vw;
     height: 100vh;

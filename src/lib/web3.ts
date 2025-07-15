@@ -6,11 +6,13 @@ import { privateKeyToAccount } from 'viem/accounts'
 import { publicClient } from '@/lib/viemClient' // you'll define this once for reading
 import flapAbi from '@/abi/FLAPTOKEN.json'
 import flappymonAbi from '@/abi/Flappymon.json'
+import skillNftAbi from '@/abi/SkillNFT.json'
 
 // === ENV CONFIG ===
 const FLAP_ADDRESS = process.env.NEXT_PUBLIC_FLAP_TOKEN_ADDRESS as `0x${string}`
 const FLAPPYMON_ADDRESS = process.env.NEXT_PUBLIC_FLAPPYMON_ADDRESS as `0x${string}`
 const PRIVATE_KEY = process.env.PRIVATE_KEY as `0x${string}`
+const SKILL_NFT_ADDRESS = process.env.NEXT_PUBLIC_SKILL_NFT_ADDRESS as `0x${string}`
 
 // Backend wallet
 const backendAccount = privateKeyToAccount(PRIVATE_KEY)
@@ -72,5 +74,40 @@ export async function mintFlap(to: `0x${string}`, amount: bigint): Promise<strin
   })
 
   const txHash = await walletClient.writeContract(request)
+  return txHash
+}
+
+export async function mintSkillNFT(to: `0x${string}`, skillType: number, skillLevel: number) {
+  const txHash = await walletClient.writeContract({
+    address: SKILL_NFT_ADDRESS,
+    abi: skillNftAbi.abi,
+    functionName: 'safeMint',
+    args: [to, skillType, skillLevel],
+  })
+
+  await publicClient.waitForTransactionReceipt({ hash: txHash })
+  return txHash
+}
+
+export async function getSkillMetadata(tokenId: number): Promise<{ skillType: number; skillLevel: number }> {
+  const [skillType, skillLevel] = await publicClient.readContract({
+    address: SKILL_NFT_ADDRESS,
+    abi: skillNftAbi.abi,
+    functionName: 'getSkillData', // ensure your contract supports this
+    args: [tokenId],
+  }) as [number, number]
+
+  return { skillType, skillLevel }
+}
+
+export async function burnSkillNFT(tokenId: number): Promise<string> {
+  const txHash = await walletClient.writeContract({
+    address: SKILL_NFT_ADDRESS,
+    abi: skillNftAbi.abi,
+    functionName: 'burn',
+    args: [tokenId],
+  })
+
+  await publicClient.waitForTransactionReceipt({ hash: txHash })
   return txHash
 }

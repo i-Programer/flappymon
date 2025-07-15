@@ -1,317 +1,489 @@
-import Phaser from 'phaser';
+import Phaser from 'phaser'
 import { useFlappymonStore } from '@/store/flappymonStore'
 import { useWalletStore } from '@/store/walletStore'
+import { useInventoryStore } from '@/store/inventoryStore'
+import { useSkillStore } from '@/store/skillStore'
 
-const PIPE_SPEED = -200;
-const PIPE_DISTANCE = 150; // Gap between top and bottom pipe
-const PIPE_INTERVAL = 1000; // ms between pipe spawns
+const PIPE_SPEED = -200
+const PIPE_INTERVAL = 1000
 
 export class GameScene extends Phaser.Scene {
-  private player!: Phaser.Physics.Arcade.Sprite;
+  private player!: Phaser.Physics.Arcade.Sprite
+  private cursors!: Phaser.Types.Input.Keyboard.CursorKeys
+  private pipes!: Phaser.Physics.Arcade.Group
+  private scoreText!: Phaser.GameObjects.Text
+  private debugText!: Phaser.GameObjects.Text
+  private gameOverUI!: Phaser.GameObjects.Container
+  private finalScoreText?: Phaser.GameObjects.Text
+  private floatingTexts!: Phaser.GameObjects.Group
+  private pipeCollider?: Phaser.Physics.Arcade.Collider
 
-  private pipes!: Phaser.Physics.Arcade.Group;
-  private lastPipeTime = 0;
-  private isGameOver = false;
+  private pipeGap = 450
 
-  private gameOverUI!: Phaser.GameObjects.Container;
+  private score = 0
+  private lastPipeTime = 0
+  private isGameOver = false
 
-  private score = 0;
-  private scoreText!: Phaser.GameObjects.Text;
+  private lastGapY = 0
+  private isPointRain = false
+  private pointRainCount = 0
+  private pointRainTimer = 0
 
-  private lastGapY = 0;
+  private isZigzag = false
+  private zigzagCount = 0
+  private zigzagTimer = 0
 
-  private isPointRain = false;
-  private pointRainCount = 0;
-  private pointRainTimer = 0;
+  private isDoublePoint = false
+  private activeEffects: Record<number, number> = {}
 
-  private isZigzag = false;
-  private zigzagCount = 0;
-  private zigzagTimer = 0;
+  private jumpRequested = false
 
+  private textureKey = ''
 
-  private incrementScore() {
-    this.score += 1;
-    this.scoreText.setText(`Score: ${this.score}`);
+  constructor() {
+    super({ key: 'GameScene' })
   }
 
-  private async handleGameOver() {
-    if (this.isGameOver) return;
-    this.isGameOver = true;
+  preload() {
+    this.load.image('background', '/assets/bg.jpg')
+    this.load.image('pipe', '/assets/pipe.png')
+  }
 
-    // Stop all pipes
-    this.pipes.setVelocityX(0);
-    this.pipes.getChildren().forEach(pipe => {
-      (pipe as Phaser.Physics.Arcade.Sprite).setVelocityX(0);
-    });
+  init() {
+    this.resetGameState()
+  }
 
-    // Stop player
-    this.player.setTint(0xff0000);
-    this.player.setVelocity(0);
-    this.player.setGravityY(0);
+  create() {
+    const equipped = useSkillStore.getState().selected
 
-    // Pause pipes and world
-    this.physics.pause();
+    this.floatingTexts = this.add.group()
 
-    // Show game over UI
-    this.gameOverUI.setVisible(true);
-    this.gameOverUI.setDepth(1000); // Force it to render above everything else
-
-    const address = useWalletStore.getState().address;
-    if (!address) return; // Or show a toast/warning
-    const score = this.score // or wherever you track it
+    this.input.on('pointerdown', () => {
+      this.jumpRequested = true
+    })
     
-    if (address && score > 0) {
-      try {
-        const payload = { score, address };
-        console.log('[Reward] Sending payload:', payload);
+    this.input.keyboard?.on('keydown-SPACE', () => {
+      // this.jumpRequested = true
+      this.activateEquippedSkill() // <--- new
+    })
     
-        const res = await fetch('/api/reward', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-    
-        const text = await res.text();
-        console.log('[Reward] status:', res.status, 'body:', text);
-    
-        if (!res.ok) throw new Error(text || 'Unknown reward error');
-        console.log('[Reward] success');
-      } catch (err) {
-        console.error('[Reward Error]', err);
-      }
-    } else {
-      console.log('[Reward] Skipped - score is 0 or no wallet connected');
+    const bg = this.add.image(0, 0, 'background').setOrigin(0)
+    bg.setDisplaySize(this.scale.width, this.scale.height)
+
+    this.physics.world.setBounds(0, 0, this.scale.width, this.scale.height)
+
+    this.createPlayer()
+    this.createScoreText()
+    this.createDebugText()
+    this.createGameOverUI()
+
+    this.pipes = this.physics.add.group({ immovable: true, allowGravity: false })
+
+    this.pipeCollider = this.physics.add.collider(this.player, this.pipes, this.handleGameOver, undefined, this)
+
+    this.input.keyboard?.on('keydown', (event: KeyboardEvent) => {
+      const code = event.code.replace('Digit', '')
+      const map: Record<string, number> = { '1': 0, '2': 1, '3': 2, '4': 3 }
+      const tokenId = map[code]
+      if (tokenId !== undefined) this.useItem(tokenId)
+    })
+  }
+
+  
+  private resetGameState() {
+    this.score = 0
+    this.lastPipeTime = 0
+    this.isGameOver = false
+
+    this.activeEffects = {}
+    this.isDoublePoint = false
+
+    this.isPointRain = false
+    this.pointRainCount = 0
+    this.pointRainTimer = 0
+
+    this.isZigzag = false
+    this.zigzagCount = 0
+    this.zigzagTimer = 0
+  }
+
+  private createPlayer() {
+    const selected = useFlappymonStore.getState().selected
+    let color = 0xffffff
+    if (selected?.rarity !== undefined) {
+      color = [0x4caf50, 0x2196f3, 0x9c27b0, 0xffc107][selected.rarity]
     }
-    
-    this.scoreText.setVisible(false);
 
-    const finalScoreText = this.add.text(this.scale.width / 2, this.scale.height / 2 - 30, `Final Score: ${this.score}`, {
-      fontSize: '28px',
+    this.textureKey = `player-${Date.now()}`
+    const graphics = this.add.graphics()
+    graphics.fillStyle(color, 1)
+    graphics.fillCircle(10, 10, 10)
+    graphics.generateTexture(this.textureKey, 20, 20)
+    graphics.destroy()
+
+    this.player = this.physics.add.sprite(100, this.scale.height / 2, this.textureKey)
+    this.player.setCollideWorldBounds(true)
+    this.player.setGravityY(500)
+  }
+
+  private createScoreText() {
+    this.scoreText = this.add.text(20, 20, 'Score: 0', {
+      fontSize: '24px',
       color: '#ffffff',
-    }).setOrigin(0.5);
-    
-    this.gameOverUI.add(finalScoreText);
-
+    }).setDepth(1000)
   }
 
-  private spawnPipePair() {
-    let newGapY: number;
-    const screenHeight = this.scale.height;
-    const pipeWidth = 50;
-    const minGapY = 100;
-    const maxGapY = screenHeight - 100 - PIPE_DISTANCE;
-
-    if (this.isPointRain) {
-      newGapY = this.lastGapY;
-      this.pointRainCount--;
-      if (this.pointRainCount <= 0) this.isPointRain = false;
-    } else if (this.isZigzag) {
-      newGapY = Phaser.Math.Between(minGapY, maxGapY);
-      this.zigzagCount--;
-      if (this.zigzagCount <= 0) this.isZigzag = false;
-    } else {
-      const shift = Phaser.Math.Between(-100, 100);
-      newGapY = Phaser.Math.Clamp(this.lastGapY + shift, minGapY, maxGapY);
-    }
-
-    this.lastGapY = newGapY;
-
-
-    // const isFake = Phaser.Math.Between(0, 100) < 10 && !this.isPointRain && !this.isZigzag;
-  
-    // Create pipes (same as before)
-    const topPipe = this.pipes.create(this.scale.width, newGapY, 'pipe') as Phaser.Physics.Arcade.Sprite;
-    topPipe.setOrigin(0, 1);
-    topPipe.setDisplaySize(pipeWidth, newGapY);
-    topPipe.setVelocityX(PIPE_SPEED);
-  
-    const bottomHeight = screenHeight - newGapY - PIPE_DISTANCE;
-    const bottomPipe = this.pipes.create(this.scale.width, newGapY + PIPE_DISTANCE, 'pipe') as Phaser.Physics.Arcade.Sprite;
-    bottomPipe.setOrigin(0, 0);
-    bottomPipe.setDisplaySize(pipeWidth, bottomHeight);
-    bottomPipe.setVelocityX(PIPE_SPEED);
-
-    // if (isFake) {
-    //   // Fake pipes: no physics
-    //   topPipe.setAlpha(0.5).setTint(0xff00ff).setBlendMode(Phaser.BlendModes.ADD);
-    //   bottomPipe.setAlpha(0.5).setTint(0xff00ff).setBlendMode(Phaser.BlendModes.ADD);
-    
-    //   this.pipes.remove(topPipe); // Remove from physics group
-    //   this.pipes.remove(bottomPipe);
-    // } else {
-    //   (bottomPipe as any).isScored = false;
-    // }
-    
-  
-    (bottomPipe as any).isScored = false;
+  private createDebugText() {
+    this.debugText = this.add.text(20, 50, '', {
+      fontSize: '16px',
+      color: '#ffffff',
+    }).setScrollFactor(0)
   }
-  
 
   private createGameOverUI() {
-    const width = this.scale.width;
-    const height = this.scale.height;
-  
-    // Dim background
-    const bg = this.add.rectangle(0, 0, width, height, 0x000000, 0.3).setOrigin(0);
-  
-    // Game Over text
+    const width = this.scale.width
+    const height = this.scale.height
+
+    const bg = this.add.rectangle(0, 0, width, height, 0x000000, 0.3).setOrigin(0)
+
     const gameOverText = this.add.text(width / 2, height / 2 - 80, 'Game Over', {
       fontSize: '48px',
       color: '#ffffff',
-    }).setOrigin(0.5);
-  
-    // Restart button
+    }).setOrigin(0.5)
+
     const restartButton = this.add.text(width / 2, height / 2, 'Restart', {
       fontSize: '32px',
       backgroundColor: '#00aa00',
       padding: { x: 20, y: 10 },
       color: '#ffffff',
-    }).setOrigin(0.5).setInteractive();
-  
+    }).setOrigin(0.5).setInteractive()
+
     restartButton.on('pointerdown', () => {
-      this.textures.remove('player') // Clean up old player texture (optional)
+      this.cleanupBeforeRestart()
       this.scene.restart()
     })
-  
-    // Main Menu button (hook up later)
+
     const mainMenuButton = this.add.text(width / 2, height / 2 + 60, 'Main Menu', {
       fontSize: '28px',
       backgroundColor: '#555555',
       padding: { x: 20, y: 10 },
       color: '#ffffff',
-    }).setOrigin(0.5).setInteractive();
-  
+    }).setOrigin(0.5).setInteractive()
+
     mainMenuButton.on('pointerdown', () => {
-      // We'll create the MainMenuScene later
-      this.scene.start('MainMenuScene');
-    });
-  
-    // Group them
-    this.gameOverUI = this.add.container(0, 0, [
-      bg,
-      gameOverText,
-      restartButton,
-      mainMenuButton,
-    ]);
-  
-    this.gameOverUI.setVisible(false);
-  }  
-  
-  constructor() {
-    super({ key: 'GameScene' });
+      this.scene.start('MainMenuScene')
+    })
+
+    this.gameOverUI = this.add.container(0, 0, [bg, gameOverText, restartButton, mainMenuButton])
+    this.gameOverUI.setVisible(false)
   }
 
-  preload() {
-    // We'll just create a shape for now using graphics in create()
+  private cleanupBeforeRestart() {
+    this.finalScoreText?.destroy()
+    this.finalScoreText = undefined
+
+    this.floatingTexts.clear(true, true)
+    this.pipes?.clear(true, true)
+
+    if (this.textureKey && this.textures.exists(this.textureKey)) {
+      this.textures.remove(this.textureKey)
+    }
   }
 
-  init() {
-    this.isGameOver = false;
-    this.lastPipeTime = 0;
-    this.score = 0;
+  private incrementScore() {
+    const multiplier = this.isDoublePoint ? 4 : 2
+    this.score += multiplier
+    this.scoreText.setText(`Score: ${this.score}`)
   }
-  
-  create() {
-    // Enable Arcade physics
-    this.physics.world.setBounds(0, 0, this.scale.width, this.scale.height);
 
-    const selected = useFlappymonStore.getState().selected
+  private async handleGameOver() {
+    if (this.isGameOver) return
+    this.isGameOver = true
 
-    let color = 0xffffff // fallback if nothing is selected
+    this.pipes.setVelocityX(0)
+    this.pipes.getChildren().forEach(pipe => {
+      (pipe as Phaser.Physics.Arcade.Sprite).setVelocityX(0)
+    })
 
-    if (selected?.rarity !== undefined) {
-      switch (selected.rarity) {
-        case 0: color = 0x4caf50; break; // Common - green
-        case 1: color = 0x2196f3; break; // Rare - blue
-        case 2: color = 0x9c27b0; break; // Epic - purple
-        case 3: color = 0xffc107; break; // Legendary - gold
+    this.player.setTint(0xff0000)
+    this.player.setVelocity(0)
+    this.player.setGravityY(0)
+
+    this.physics.pause()
+
+    this.gameOverUI.setVisible(true)
+    this.gameOverUI.setDepth(1000)
+    this.scoreText.setVisible(false)
+
+    const address = useWalletStore.getState().address
+    const store = useInventoryStore.getState()
+    const usedItems = Object.entries(store.usedItemsThisSession)
+    .filter(([_, count]) => count > 0)
+    .map(([tokenId, count]) => ({
+      tokenId: Number(tokenId),
+      uses: count
+    }))
+    console.log(usedItems)
+
+    if (address && this.score > 0) {
+      try {
+        const payload = { score: this.score, address }
+        const res = await fetch('/api/reward', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+        if (!res.ok) throw new Error(await res.text())
+      } catch (err) {
+        console.error('[Reward Error]', err)
       }
+
+      if (usedItems.length > 0 && address) {
+        try {
+          const burnRes = await fetch('/api/item/burn_used_items', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ address, usedItems }),
+          })
+      
+          if (!burnRes.ok) throw new Error(await burnRes.text())
+        } catch (err) {
+          console.error('[Burn Error]', err)
+        }
+      }
+      
+      // Reset session usage after game over
+      store.resetUsedItems()
     }
 
-    // ✅ Make unique texture name per session to avoid conflict or reuse
-    const textureKey = `player-${Date.now()}`
-
-    const graphics = this.add.graphics()
-    graphics.fillStyle(color, 1)
-    graphics.fillCircle(10, 10, 10)
-    graphics.generateTexture(textureKey, 20, 20)
-    graphics.destroy()
-
-    // ✅ Use the new unique texture key
-    this.player = this.physics.add.sprite(100, this.scale.height / 2, textureKey)
-
-
-    // Player physics properties
-    this.player.setCollideWorldBounds(true);
-    this.player.setBounce(0);
-    this.player.setGravityY(800); // Gravity (tune this)
-
-    // Optional: basic input to test jumping
-    this.input.on('pointerdown', this.flap, this);
-    this.input.keyboard?.on('keydown-SPACE', this.flap, this);
-
-    // Group to manage pipes
-    this.pipes = this.physics.add.group({
-      immovable: true,
-      allowGravity: false,
-    });
-
-    this.physics.add.collider(this.player, this.pipes, this.handleGameOver, undefined, this);
-
-    this.score = 0;
-    this.scoreText = this.add.text(20, 20, 'Score: 0', {
-      fontSize: '24px',
+    this.finalScoreText?.destroy()
+    this.finalScoreText = this.add.text(this.scale.width / 2, this.scale.height / 2 - 30, `Final Score: ${this.score}`, {
+      fontSize: '28px',
       color: '#ffffff',
-    }).setScrollFactor(0);
-    this.scoreText.setDepth(1000);
-
-
-    this.createGameOverUI();
+    }).setOrigin(0.5)
+    this.gameOverUI.add(this.finalScoreText)
   }
 
-  flap() {
-    if (this.isGameOver) return;
-    this.player.setVelocityY(-300); // Upward impulse
+  private spawnPipePair() {
+    const screenHeight = this.scale.height
+    const pipeWidth = 70
+    const minGapY = 100
+    const maxGapY = screenHeight - 100 - this.pipeGap
+
+    let newGapY: number
+    if (this.isPointRain) {
+      newGapY = this.lastGapY
+      if (--this.pointRainCount <= 0) this.isPointRain = false
+    } else if (this.isZigzag) {
+      newGapY = Phaser.Math.Between(minGapY, maxGapY)
+      if (--this.zigzagCount <= 0) this.isZigzag = false
+    } else {
+      newGapY = Phaser.Math.Clamp(this.lastGapY + Phaser.Math.Between(-100, 100), minGapY, maxGapY)
+    }
+
+    this.lastGapY = newGapY
+
+    if (this.pipes.getChildren().length >= 20) return
+
+    const topPipe = this.pipes.create(this.scale.width, newGapY, 'pipe') as Phaser.Physics.Arcade.Sprite
+    topPipe.setOrigin(0, 1).setFlipY(true).setDisplaySize(pipeWidth, newGapY).setVelocityX(PIPE_SPEED)
+
+    const bottomPipe = this.pipes.create(this.scale.width, newGapY + this.pipeGap, 'pipe') as Phaser.Physics.Arcade.Sprite
+    bottomPipe.setOrigin(0, 0).setDisplaySize(pipeWidth, screenHeight - newGapY - this.pipeGap).setVelocityX(PIPE_SPEED)
+
+    const pair = { top: topPipe, bottom: bottomPipe }
+    Object.assign(topPipe, { pair })
+    Object.assign(bottomPipe, { pair, isScored: false })
+  }
+
+  private showFloatingText(text: string, color: number) {
+    const msg = this.add.text(this.player.x, this.player.y - 40, text, {
+      fontSize: '20px',
+      color: '#' + color.toString(16).padStart(6, '0'),
+      fontStyle: 'bold',
+    }).setOrigin(0.5)
+    this.floatingTexts.add(msg)
+
+    this.tweens.add({
+      targets: msg,
+      y: msg.y - 30,
+      alpha: 0,
+      duration: 1000,
+      ease: 'Cubic.easeOut',
+      onComplete: () => msg.destroy(),
+    })
+  }
+
+  private useItem(tokenId: number) {
+    if (this.isGameOver) return
+  
+    const store = useInventoryStore.getState()
+    const item = store.items?.find(i => i.tokenId === tokenId)
+    if (!item || item.uses <= 0) {
+      this.showFloatingText(`No item ${tokenId} left!`, 0xff0000)
+      return
+    }
+  
+    switch (item.tokenId) {
+      case 0:
+        if (this.isDoublePoint) {
+          this.showFloatingText('Double Point already active!', 0xff0000)
+          return
+        }
+        this.isDoublePoint = true
+        this.activeEffects[0] = 4
+        this.showFloatingText('🎯 Double Point Activated!', 0xffff00)
+        break
+      case 1:
+        this.showFloatingText('🧠 Double EXP Activated!', 0x00ffff)
+        break
+      case 2:
+        this.isZigzag = true
+        this.zigzagCount = 4
+        this.showFloatingText('🌪 Gap Expander!', 0x00ff00)
+        break
+      case 3:
+        this.player.setVelocityY(-500)
+        this.showFloatingText('💪 Stamina Boost!', 0xff00ff)
+        break
+      default:
+        this.showFloatingText('Unknown Item!', 0xffffff)
+        break
+    }
+  
+    store.consumeItem(tokenId)
+  }
+  
+  private activateEquippedSkill() {
+    const equipped = useSkillStore.getState().selected
+    if (!equipped || this.isGameOver) return
+  
+    const skill = equipped.skillType
+    const level = equipped.skillLevel
+  
+    switch (skill) {
+      case 0: // Dash → burst forward illusion
+        this.showFloatingText('💨 Dash!', 0x00ffff)
+
+        // Temporarily increase pipe speed (i.e., make the world scroll faster)
+        const dashSpeed = -400 - level * 20
+        this.pipes.setVelocityX(dashSpeed)
+
+        this.time.delayedCall(1000 + level * 100, () => {
+          this.pipes.setVelocityX(PIPE_SPEED) // revert to normal
+        })
+        break
+
+      case 1: // Disappear → true invincibility
+        const body = this.player.body as Phaser.Physics.Arcade.Body
+        body.checkCollision.none = true
+        this.player.setAlpha(0.1)
+        if (this.pipeCollider) this.pipeCollider.active = false
+      
+        this.showFloatingText('🫥 Disappear!', 0xffffff)
+      
+        this.time.delayedCall(90500 + level * 100, () => {
+          body.checkCollision.none = false
+          this.player.setAlpha(1)
+          if (this.pipeCollider) this.pipeCollider.active = true
+        })
+        break
+      
+  
+      case 2: // Gap Manipulation → increase gap spacing
+        this.pipeGap += 50
+        this.showFloatingText('🌀 Gap Enlarged!', 0xffcc00)
+        this.time.delayedCall(3000 + level * 200, () => {
+          this.pipeGap -= 50
+        })
+        break
+  
+      case 3: // Pipe Destroyer → destroy upcoming pipe
+        const nearest = this.pipes.getChildren().find((pipe: any) => pipe.x > this.player.x)
+        if (nearest) {
+          this.showFloatingText('💥 Pipe Destroyed!', 0xff0000)
+          this.pipes.remove(nearest, true, true)
+        }
+        break
+  
+      case 4: // Floating → reverse gravity briefly
+        this.player.setGravityY(-300)
+        this.showFloatingText('🎈 Floating!', 0x00ff00)
+        this.time.delayedCall(1500 + level * 100, () => {
+          this.player.setGravityY(500)
+        })
+        break
+  
+      default:
+        this.showFloatingText('Unknown Skill', 0xffffff)
+        break
+    }
+  }
+  
+
+  private disableItemEffect(tokenId: number) {
+    if (tokenId === 0) {
+      this.isDoublePoint = false
+      this.showFloatingText('🎯 Double Point Ended!', 0xffcc00)
+    }
+    delete this.activeEffects[tokenId]
   }
 
   update() {
-    const now = this.time.now;
-    const interval = this.isPointRain ? 300 : PIPE_INTERVAL;
+    this.debugText.setText([
+      `FPS: ${this.game.loop.actualFps.toFixed(1)}`,
+      `Pipes: ${this.pipes.getChildren().length}`,
+      `Objects: ${this.children.list.length}`,
+    ])
 
-    if (now - this.lastPipeTime > interval) {
-      this.lastPipeTime = now;
-      this.spawnPipePair();
+    const now = this.time.now
+    const interval = this.isPointRain ? 800 : PIPE_INTERVAL
+
+    if (!this.isGameOver && now - this.lastPipeTime > interval) {
+      this.lastPipeTime = now
+      this.spawnPipePair()
     }
 
-
-    // Remove pipes off-screen
-    this.pipes.getChildren().forEach((pipe) => {
-      if ((pipe as Phaser.GameObjects.Sprite).x < -50) {
-        this.pipes.remove(pipe, true, true); // remove + destroy
-      }
-
-      const p = pipe as Phaser.Physics.Arcade.Sprite & { isScored?: boolean };
-
-      // Check only bottom pipes (they have isScored)
-      if (!p.isScored && p.x + p.displayWidth < this.player.x) {
-        p.isScored = true;
-        this.incrementScore();
-      }
-    });
-
-    if (this.player.y > this.scale.height || this.player.y < 0) {
-      this.handleGameOver();
+    if (!this.isGameOver && this.jumpRequested) {
+      this.player.setVelocityY(-250)
+      this.jumpRequested = false
     }
     
-    // Trigger point rain occasionally
-    if (!this.isPointRain && this.time.now - this.pointRainTimer > 30000) {
-      this.pointRainTimer = this.time.now;
+
+    this.pipes.getChildren().forEach(pipe => {
+      const sprite = pipe as Phaser.Physics.Arcade.Sprite & { pair?: any; isScored?: boolean }
+
+      if (sprite.x + sprite.displayWidth < 0) {
+        if (sprite.pair) {
+          this.pipes.remove(sprite.pair.top, true, true)
+          this.pipes.remove(sprite.pair.bottom, true, true)
+        } else {
+          this.pipes.remove(sprite, true, true)
+        }
+        return
+      }
+
+      if (!sprite.isScored && sprite.pair?.bottom === sprite && sprite.x + sprite.displayWidth < this.player.x) {
+        sprite.isScored = true
+        this.incrementScore()
+
+        for (const [idStr, remaining] of Object.entries(this.activeEffects)) {
+          const id = parseInt(idStr)
+          if (--this.activeEffects[id] === 0) this.disableItemEffect(id)
+        }
+      }
+    })
+
+    if (!this.isPointRain && now - this.pointRainTimer > 30000) {
+      this.pointRainTimer = now
       if (Phaser.Math.Between(0, 100) < 25) {
-        this.isPointRain = true;
-        this.pointRainCount = 4;
-        console.log('💰 Point rain incoming!');
+        this.isPointRain = true
+        this.pointRainCount = 4
       }
     }
 
+    if (this.player.y > this.scale.height || this.player.y < 0) {
+      this.handleGameOver()
+    }
   }
 }

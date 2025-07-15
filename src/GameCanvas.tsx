@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createPhaserGame } from './game/main'
 import { WalletOptions } from './components/walletOptions'
 import { Account } from './components/account'
+import { StoreModal } from './components/storeModal'
 
 import {
   useAccount,
@@ -16,6 +17,8 @@ import flapAbi from '@/abi/FLAPTOKEN.json'
 import { publicClient } from '@/lib/viemClient'
 import { getUserFlappymons } from '@/lib/nft'
 import { useFlappymonStore } from '@/store/flappymonStore'
+import { loadInventory } from './lib/loadInventory'
+import { loadSkills } from './lib/loadSkills'
 
 const FLAP_ADDRESS = process.env.NEXT_PUBLIC_FLAP_TOKEN_ADDRESS as `0x${string}`
 const BACKEND_WALLET = process.env.NEXT_PUBLIC_BACKEND_ADDRESS as `0x${string}`
@@ -28,10 +31,11 @@ export default function GameCanvas() {
   const { signTypedDataAsync } = useSignTypedData()
   const [faucetClaimed, setFaucetClaimed] = useState(false)
   const [faucetLoading, setFaucetLoading] = useState(false)
+  const [storeOpen, setStoreOpen] = useState(false)
 
   const equippedOnce = useRef(false)
 
-  // ✅ Auto-equip first NFT when wallet connects
+  // Auto-equip the first NFT
   useEffect(() => {
     if (!address || equippedOnce.current) return
 
@@ -46,11 +50,53 @@ export default function GameCanvas() {
   }, [address])
 
   useEffect(() => {
+    const canvas = document.querySelector('canvas')
+    if(!canvas) return
+  
+    if (storeOpen){
+      canvas.classList.add('ui-blocked')
+    } else {
+      canvas.classList.remove('ui-blocked')
+    }
+  }, [storeOpen])
+
+  useEffect(() => {
+    if (!address) return 
+
+    loadInventory(address)
+    loadSkills(address)
+
+    const canvas = document.querySelector('canvas')
+    if(!canvas) return
+  
+    if (storeOpen){
+      canvas.classList.add('ui-blocked')
+    } else {
+      canvas.classList.remove('ui-blocked')
+    }
+  }, [address])
+  
+  useEffect(() => {
+    if (!address || !signMessageAsync) return
+  
+    ;(window as any).__wallet = {
+      address,
+      signMessageAsync,
+    }
+  }, [address, signMessageAsync])
+  
+
+  // Initialize Phaser
+  useEffect(() => {
     if (gameContainerRef.current) {
-      (window as any).rollGacha = rollGacha
+      const w = window as any;
+      w.rollGacha = rollGacha;
+      w.rollSkillGacha = rollSkillGacha;
+
       const game = createPhaserGame(gameContainerRef.current.id)
       return () => {
         delete (window as any).rollGacha
+        delete (window as any).rollSkillGacha;
         game.destroy(true)
       }
     }
@@ -159,6 +205,111 @@ export default function GameCanvas() {
     window.dispatchEvent(successEvent)
   }
 
+  async function rollSkillGacha() {
+    if (!address || !signMessageAsync || !signTypedDataAsync) return
+  
+    const balance = await publicClient.readContract({
+      address: FLAP_ADDRESS,
+      abi: flapAbi.abi,
+      functionName: 'balanceOf',
+      args: [address],
+    }) as bigint
+  
+    const cost = parseUnits('80', 18)
+    if (balance < cost) {
+      alert('Not enough $FLAP! You need at least 80 $FLAP for skill gacha.')
+      return
+    }
+  
+    const timestamp = Date.now()
+    const message = `Roll skill gacha at ${timestamp}`
+  
+    let signature: string
+    try {
+      signature = await signMessageAsync({ message })
+    } catch (err: any) {
+      if (err.name === 'UserRejectedRequestError') {
+        alert('You rejected the signature request.')
+        return
+      }
+      alert('Failed to sign message.')
+      return
+    }
+  
+    const nonce = await publicClient.readContract({
+      address: FLAP_ADDRESS,
+      abi: flapAbi.abi,
+      functionName: 'nonces',
+      args: [address],
+    }) as bigint
+  
+    const deadline = Math.floor(Date.now() / 1000) + 3600
+  
+    let signatureTyped: string
+    try {
+      signatureTyped = await signTypedDataAsync({
+        domain: {
+          name: 'FLAPTOKEN',
+          version: '1',
+          chainId: chain?.id ?? 11155111,
+          verifyingContract: FLAP_ADDRESS,
+        },
+        types: {
+          Permit: [
+            { name: 'owner', type: 'address' },
+            { name: 'spender', type: 'address' },
+            { name: 'value', type: 'uint256' },
+            { name: 'nonce', type: 'uint256' },
+            { name: 'deadline', type: 'uint256' },
+          ],
+        },
+        message: {
+          owner: address,
+          spender: BACKEND_WALLET,
+          value: cost,
+          nonce: BigInt(nonce),
+          deadline: BigInt(deadline),
+        },
+        primaryType: 'Permit',
+      })
+    } catch (err: any) {
+      if (err.name === 'UserRejectedRequestError') {
+        alert('You rejected the permit signature.')
+        return
+      }
+      alert('Failed to sign permit.')
+      return
+    }
+  
+    const res = await fetch('/api/skill_gacha/roll', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        address,
+        signature,
+        timestamp,
+        permit: {
+          owner: address,
+          spender: BACKEND_WALLET,
+          value: cost.toString(),
+          deadline,
+          signature: signatureTyped,
+        },
+      }),
+    })
+  
+    const data = await res.json()
+  
+    if (!res.ok) {
+      const failEvent = new CustomEvent('skillgacha:fail', { detail: data?.error || 'Unknown error' })
+      window.dispatchEvent(failEvent)
+      return
+    }
+  
+    const successEvent = new CustomEvent('skillgacha:result', { detail: data })
+    window.dispatchEvent(successEvent)
+  }
+
   async function claimFaucet() {
     if (!address || !signMessageAsync) return
 
@@ -207,6 +358,19 @@ export default function GameCanvas() {
       )}
 
       <div id="phaser-game" ref={gameContainerRef} className="w-screen h-screen" />
+
+      {/* 🛒 Store Button */}
+      {address && (
+        <button
+          onClick={() => setStoreOpen(true)}
+          className="fixed bottom-4 right-4 z-50 bg-yellow-400 hover:bg-yellow-500 text-black font-semibold px-4 py-2 rounded-lg shadow"
+        >
+          🛍️ Store
+        </button>
+      )}
+
+      {/* 🏪 Store Modal (modular) */}
+      {storeOpen && <StoreModal onClose={() => setStoreOpen(false)} />}
     </>
   )
 }

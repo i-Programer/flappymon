@@ -6,6 +6,54 @@ export class MainMenuScene extends Phaser.Scene {
     super({ key: 'MainMenuScene' });
   }
 
+  private handleSkillGachaResult = (e: any) => {
+    if (!this.sys || !this.sys.isActive()) return;
+  
+    const { skillType, level } = e.detail;
+    const skillNames = ['Dash', 'Disappear', 'Gap Manipulation', 'Pipe Destroyer', 'Floating'];
+    const message = `🎓 You got ${skillNames[skillType]} (Lv ${level})!`;
+  
+    const popup = this.add.text(this.scale.width / 2, this.scale.height / 2, message, {
+      fontSize: '28px',
+      color: '#00ffff',
+      backgroundColor: '#111',
+      padding: { x: 20, y: 10 },
+    }).setOrigin(0.5).setDepth(999);
+  
+    this.tweens.add({
+      targets: popup,
+      alpha: 0,
+      duration: 2500,
+      ease: 'Power1',
+      onComplete: () => popup.destroy(),
+    });
+  };
+
+  private handleGachaResult = (e: any) => {
+    if (!this.sys || !this.sys.isActive()) return;
+  
+    const { rarity } = e.detail;
+    const rarityNames = ['Common', 'Rare', 'Epic', 'Legendary'];
+    const rarityColors = ['#4caf50', '#2196f3', '#9c27b0', '#ffc107'];
+    const message = `You got a ${rarityNames[rarity]} Flappymon!`;
+  
+    const popup = this.add.text(this.scale.width / 2, this.scale.height / 2, message, {
+      fontSize: '32px',
+      color: rarityColors[rarity],
+      backgroundColor: '#111',
+      padding: { x: 20, y: 10 },
+    }).setOrigin(0.5).setDepth(999);
+  
+    this.tweens.add({
+      targets: popup,
+      alpha: 0,
+      duration: 2500,
+      ease: 'Power1',
+      onComplete: () => popup.destroy(),
+    });
+  };
+  
+
   create() {
     const { width, height } = this.scale;
 
@@ -39,18 +87,7 @@ export class MainMenuScene extends Phaser.Scene {
       });
     }
 
-    const settingsButton = this.add.text(width / 2, 360, 'Settings', {
-      fontSize: '28px',
-      backgroundColor: '#555555',
-      padding: { x: 20, y: 10 },
-      color: '#ffffff',
-    }).setOrigin(0.5).setInteractive();
-
-    settingsButton.on('pointerdown', () => {
-      console.log('TODO: Settings scene');
-    });
-
-    const characterButton = this.add.text(width / 2, 430, 'Character', {
+    const characterButton = this.add.text(width / 2, 360, 'Character', {
       fontSize: '28px',
       backgroundColor: '#555555',
       padding: { x: 20, y: 10 },
@@ -59,6 +96,17 @@ export class MainMenuScene extends Phaser.Scene {
 
     characterButton.on('pointerdown', () => {
       this.scene.start('CharacterScene')
+    });
+
+    const skillsButton = this.add.text(width / 2, 430, 'Skills', {
+      fontSize: '28px',
+      backgroundColor: '#555555',
+      padding: { x: 20, y: 10 },
+      color: '#ffffff',
+    }).setOrigin(0.5).setInteractive();
+
+    skillsButton.on('pointerdown', () => {
+      this.scene.start('SkillScene')
     });
 
     const gachaButton = this.add.text(width / 2, 510, 'Open Gacha', {
@@ -76,30 +124,32 @@ export class MainMenuScene extends Phaser.Scene {
       }
     });
 
-    // ✅ Define handlers using arrow functions to preserve `this`
-    this.handleGachaResult = (e: any) => {
-      const { rarity } = e.detail;
+    const skillGachaButton = this.add.text(width / 2, 580, 'Skill Gacha', {
+      fontSize: '28px',
+      backgroundColor: '#0066aa',
+      padding: { x: 20, y: 10 },
+      color: '#ffffff',
+    }).setOrigin(0.5).setInteractive();
+    
+    skillGachaButton.on('pointerdown', () => {
+      if ((window as any).rollSkillGacha) {
+        (window as any).rollSkillGacha();
+      } else {
+        console.warn('Skill gacha function not available yet.');
+      }
+    });
 
-      const rarityNames = ['Common', 'Rare', 'Epic', 'Legendary'];
-      const rarityColors = ['#4caf50', '#2196f3', '#9c27b0', '#ffc107'];
-      const message = `You got a ${rarityNames[rarity]} Flappymon!`;
+    const marketplaceButton = this.add.text(width / 2, 690, 'Marketplace', {
+      fontSize: '28px',
+      backgroundColor: '#555555',
+      padding: { x: 20, y: 10 },
+      color: '#ffffff',
+    }).setOrigin(0.5).setInteractive();
 
-      const popup = this.add.text(this.scale.width / 2, this.scale.height / 2, message, {
-        fontSize: '32px',
-        color: rarityColors[rarity],
-        backgroundColor: '#111',
-        padding: { x: 20, y: 10 },
-      }).setOrigin(0.5).setDepth(999);
-
-      this.tweens.add({
-        targets: popup,
-        alpha: 0,
-        duration: 2500,
-        ease: 'Power1',
-        onComplete: () => popup.destroy(),
-      });
-    };
-
+    marketplaceButton.on('pointerdown', () => {
+      this.scene.start('MarketplaceScene')
+    });
+    
     this.handleGachaFail = (e: any) => {
       const message = typeof e.detail === 'string' ? e.detail : 'Unknown error';
 
@@ -122,8 +172,11 @@ export class MainMenuScene extends Phaser.Scene {
     window.addEventListener('gacha:result', this.handleGachaResult);
     window.addEventListener('gacha:fail', this.handleGachaFail);
 
+    window.addEventListener('skillgacha:result', this.handleSkillGachaResult);
+
     // ✅ Clean up when scene is shutdown
     this.events.once('shutdown', () => {
+      window.removeEventListener('skillgacha:result', this.handleSkillGachaResult);
       window.removeEventListener('gacha:result', this.handleGachaResult);
       window.removeEventListener('gacha:fail', this.handleGachaFail);
     });
@@ -132,6 +185,5 @@ export class MainMenuScene extends Phaser.Scene {
   }
 
   // ✅ Declare handlers as class properties
-  private handleGachaResult!: (e: any) => void;
   private handleGachaFail!: (e: any) => void;
 }

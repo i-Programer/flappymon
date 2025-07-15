@@ -1,6 +1,6 @@
 // pages/api/reward.ts
 import { NextApiRequest, NextApiResponse } from 'next'
-import { walletClient } from '@/lib/walletClient'
+import { walletClient } from '@/lib/walletClient.server'
 import { parseUnits } from 'viem'
 import flapAbi from '@/abi/FLAPTOKEN.json'
 
