@@ -2,34 +2,46 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { walletClient, publicClient, backendAccount } from '@/lib/walletClient.server'
 import skillNFTAbi from '@/abi/SkillNFT.json'
 import skillMarketplaceAbi from '@/abi/SkillMarketplace.json'
-import { parseEther } from 'viem'
+import { parseEther,recoverMessageAddress } from 'viem'
 
 const SKILLNFT_ADDRESS = process.env.NEXT_PUBLIC_SKILL_NFT_ADDRESS as `0x${string}`
 const MARKETPLACE_ADDRESS = process.env.NEXT_PUBLIC_SKILL_NFT_MARKETPLACE_ADDRESS as `0x${string}`
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { tokenId, price } = req.body
-    if (!tokenId || !price) {
-      return res.status(400).json({ error: 'Missing tokenId or price' })
+    const { tokenId, price, address, signature } = req.body
+
+    if (!tokenId || !price || !address || !signature) {
+      return res.status(400).json({ error: 'Missing parameters' })
     }
 
     const tokenIdBig = BigInt(tokenId)
     const priceInWei = parseEther(price.toString())
 
-    // === Step 1: Check ownership
-    const owner = await publicClient.readContract({
+    // === Step 1: Verify signature ===
+    const message = `Sell skill NFT ${tokenId} for ${price} FLAP`
+    const recovered = await recoverMessageAddress({
+      message,
+      signature,
+    })
+
+    if (recovered.toLowerCase() !== address.toLowerCase()) {
+      return res.status(401).json({ error: 'Invalid signature' })
+    }
+
+    // === Step 2: Ensure user owns the NFT ===
+    const currentOwner = await publicClient.readContract({
       address: SKILLNFT_ADDRESS,
       abi: skillNFTAbi.abi,
       functionName: 'ownerOf',
       args: [tokenIdBig],
-    }) as `0x${string}`
+    }) as string
 
-    if (owner.toLowerCase() !== backendAccount.address.toLowerCase()) {
-      return res.status(400).json({ error: 'Backend wallet does not own this skill NFT.' })
+    if (currentOwner.toLowerCase() !== address.toLowerCase()) {
+      return res.status(403).json({ error: 'Not your NFT' })
     }
 
-    // === Step 2: Check approval
+    // === Step 3: Check if already approved to marketplace ===
     const approved = await publicClient.readContract({
       address: SKILLNFT_ADDRESS,
       abi: skillNFTAbi.abi,
@@ -49,17 +61,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       })
 
       console.log('[Approval] TX hash:', approvalTx)
-      await publicClient.waitForTransactionReceipt({ hash: approvalTx })
     } else {
       console.log('[Approval] Already approved.')
     }
 
-    // === Step 3: List the skill
+    // === Step 4: List the skill ===
     const txHash = await walletClient.writeContract({
       address: MARKETPLACE_ADDRESS,
       abi: skillMarketplaceAbi.abi,
       functionName: 'listSkill',
-      args: [tokenIdBig, priceInWei],
+      args: [address, tokenIdBig, priceInWei],
       account: backendAccount,
     })
 

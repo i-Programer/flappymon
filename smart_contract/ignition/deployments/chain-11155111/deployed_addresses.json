@@ -17,5 +17,7 @@
   "SkillNFTModule#SkillNFT": "0x0Ab2E3684B0fB0eA75F2B1F1bBe4813fa4472FDd",
   "SkillNFTModuleV2#SkillNFT": "0xAea2F838639bfB40637EC7B5fDFB39514F702A0C",
   "SkillNFTModuleV3#SkillNFT": "0xb4C5AD5d18F6c362794FA90130755902397a6D1d",
-  "SkillMarketplaceModule#SkillMarketplace": "0x5700b16C2a24DAFa4dB9cd6A9D6a453f638f15a0"
+  "SkillMarketplaceModule#SkillMarketplace": "0x5700b16C2a24DAFa4dB9cd6A9D6a453f638f15a0",
+  "SkillMarketplaceModuleV2#SkillMarketplace": "0x9fdf28FD656D6Dd824041742060E7A86Af3ceb1C",
+  "SkillMarketplaceModuleV3#SkillMarketplace": "0x0C57D00081b74F1C7bE6B6Ecc444442001B21728"
 }

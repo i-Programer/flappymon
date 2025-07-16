@@ -2,11 +2,18 @@
 
 import { useState } from 'react'
 import { useAccount, useSignTypedData } from 'wagmi'
-import { parseUnits, formatUnits } from 'viem'
+import { parseUnits, formatUnits, parseSignature } from 'viem'
 import { publicClient } from '@/lib/walletClient'
 import { flapTokenAbi } from "@/lib/contracts"
 import { loadInventory } from '@/lib/loadInventory'
+import { createWalletClient, custom } from 'viem'
+import { sepolia } from 'viem/chains'
+import { gameItemAbi } from '@/lib/contracts'
 
+const walletClient = createWalletClient({
+  chain: sepolia,
+  transport: custom((window as any).ethereum),
+})
 
 const FLAP_COST = parseUnits('80', 18)
 const FLAP_TOKEN_ADDRESS = process.env.NEXT_PUBLIC_FLAP_TOKEN_ADDRESS as `0x${string}`
@@ -68,24 +75,23 @@ export function BuyItemButton({ address, id, quantity = 1, refresh }: {
         },
       })
 
-      const res = await fetch('/api/shop/buy', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          address,
-          id,
-          amount: quantity,
-          permit: {
-            deadline,
-            signature,
-          },
-        }),
+      const { v, r, s } = parseSignature(signature)
+
+      await walletClient.writeContract({
+        address: GAME_ITEM_ADDRESS,
+        abi: gameItemAbi.abi,
+        functionName: 'buyItemWithPermit',
+        args: [
+          BigInt(id),
+          BigInt(quantity),
+          totalCost,
+          BigInt(deadline),
+          v, r, s,
+        ],
+        account: address, // penting!
       })
 
       await loadInventory(address)
-
-      const json = await res.json()
-      if (!res.ok) throw new Error(json.error || 'Failed to buy item')
 
       refresh?.()
     } catch (err: any) {

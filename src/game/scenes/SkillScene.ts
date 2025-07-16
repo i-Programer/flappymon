@@ -1,11 +1,7 @@
 import Phaser from 'phaser'
 import { useWalletStore } from '@/store/walletStore'
 import { useSkillStore, SkillNFT } from '@/store/skillStore'
-import { writeContract, getWalletClient } from '@wagmi/core'
-import skillMarketplaceAbi from '@/abi/SkillMarketplace.json'
-import { parseEther } from 'viem'
 
-const MARKETPLACE_ADDRESS = process.env.NEXT_PUBLIC_SKILL_NFT_MARKETPLACE_ADDRESS as `0x${string}`
 const skillNames = ['Dash', 'Disappear', 'Gap Manipulation', 'Pipe Destroyer', 'Floating']
 
 export class SkillScene extends Phaser.Scene {
@@ -239,92 +235,32 @@ export class SkillScene extends Phaser.Scene {
     const [a, b] = this.selectedSkills
     if (!a || !b) return
   
-    const wallet = (window as any).__wallet
-    const address = wallet?.address
-    const signMessage = wallet?.signMessageAsync
-
-    if (!address || !signMessage) {
-      this.showPopup('Wallet not connected')
-      return
-    }
-
-    const message = `Level up skills: ${a.tokenId}, ${b.tokenId}`
-
-    let signature: string
-    try {
-      signature = await signMessage({ message })
-    } catch (err) {
-      this.showPopup('Signature failed or rejected')
-      return
-    }
-
-  
-    const res = await fetch('/api/skill_combine/level_up', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        address,
-        tokenIds: [a.tokenId, b.tokenId],
-        signature,
-      }),
-    })
-  
-    const data = await res.json()
-  
-    if (!res.ok) {
-      this.showPopup(`Level up failed: ${data.error}`)
+    const levelUpFn = (window as any).levelUpSkills
+    if (!levelUpFn) {
+      this.showPopup('LevelUp function not available')
       return
     }
   
-    this.showPopup(`Leveled up ${skillNames[a.skillType]} to Lv${data.newLevel}`)
-    this.clearSelection()
-  
-    // OPTIONAL: Refresh skill inventory (useSkillStore.setSkills([...]))
+    levelUpFn([a.tokenId, b.tokenId])
   }
+  
   
   private async sellSkill(skill: SkillNFT) {
-    try {
-      // Check if already listed (just in case)
-      const res = await fetch(`/api/marketplace/get_listing?tokenId=${skill.tokenId}`)
-      const data = await res.json()
-      if (data.price !== '0') {
-        return this.showPopup(`Skill #${skill.tokenId} is already listed.`)
-      }
-    } catch (err) {
-      return this.showPopup('Error checking listing status.')
+    const sell = (window as any).sellSkill
+    if (!sell) return this.showPopup('Sell function not available')
+  
+    const res = await fetch(`/api/marketplace/get_listing?tokenId=${skill.tokenId}`)
+    const data = await res.json()
+    if (data.price !== '0') {
+      return this.showPopup(`Skill #${skill.tokenId} is already listed.`)
     }
-
-    const price = prompt(`Enter listing price for ${skillNames[skill.skillType]} Lv${skill.skillLevel} (in FLAP):`)
+  
+    const price = prompt(`Enter price for ${skillNames[skill.skillType]} Lv${skill.skillLevel} (in FLAP):`)
     if (!price || isNaN(+price)) return this.showPopup('Invalid price.')
   
-    const wallet = (window as any).__wallet
-    const address = wallet?.address
-    const signMessage = wallet?.signMessageAsync
-  
-    if (!address || !signMessage) {
-      this.showPopup('Wallet not connected')
-      return
-    }
-  
-    try {
-      const res = await fetch('/api/marketplace/list', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tokenId: skill.tokenId,
-          price,
-        }),
-      })
-  
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
-  
-      this.showPopup(`Listed skill #${skill.tokenId} for ${price} FLAP`)
-    } catch (err: any) {
-      this.showPopup(`Listing failed: ${err.message}`)
-    }
+    sell(skill.tokenId, price)
   }
-
+  
   private async cancelListing(skill: SkillNFT) {
     try {
       const res = await fetch('/api/marketplace/cancel', {
@@ -347,47 +283,14 @@ export class SkillScene extends Phaser.Scene {
   private async handleUnlock() {
     const [a, b] = this.selectedSkills
     if (!a || !b) return
-  
-    const wallet = (window as any).__wallet
-    const address = wallet?.address
-    const signMessage = wallet?.signMessageAsync
-  
-    if (!address || !signMessage) {
-      this.showPopup('Wallet not connected')
+
+    const unlockSkills = (window as any).unlockSkills
+    if (!unlockSkills) {
+      this.showPopup('LevelUp function not available')
       return
     }
   
-    const message = `Unlock skill: ${a.tokenId}, ${b.tokenId}`
-  
-    let signature: string
-    try {
-      signature = await signMessage({ message })
-    } catch (err) {
-      this.showPopup('Signature rejected')
-      return
-    }
-  
-    const res = await fetch('/api/skill_combine/unlock', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        address,
-        tokenIds: [a.tokenId, b.tokenId],
-        signature,
-      }),
-    })
-  
-    const data = await res.json()
-  
-    if (!res.ok) {
-      this.showPopup(`Unlock failed: ${data.error}`)
-      return
-    }
-  
-    this.showPopup(`Unlocked new skill: ${data.skillType} Lv${data.skillLevel}`)
-    this.clearSelection()
-  
-    // OPTIONAL: Refresh skill inventory (useSkillStore.setSkills([...]))
+    unlockSkills([a.tokenId, b.tokenId])
   }
   
   

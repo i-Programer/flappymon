@@ -16,6 +16,8 @@ contract SkillMarketplace is ReentrancyGuard {
 
     mapping(uint256 => Listing) public listings;
 
+    event SkillListed(address indexed seller, uint256 indexed tokenId, uint256 price);
+
     event Listed(address indexed seller, uint256 indexed tokenId, uint256 price);
     event Cancelled(address indexed seller, uint256 indexed tokenId);
     event Purchased(address indexed buyer, address indexed seller, uint256 indexed tokenId, uint256 price);
@@ -25,16 +27,23 @@ contract SkillMarketplace is ReentrancyGuard {
         flapToken = IERC20(_flapToken);
     }
 
-    function listSkill(uint256 tokenId, uint256 price) external {
-        require(skillNFT.ownerOf(tokenId) == msg.sender, "Not your NFT");
+    function listSkill(address seller, uint256 tokenId, uint256 price) external {
         require(
-            skillNFT.getApproved(tokenId) == address(this) || skillNFT.isApprovedForAll(msg.sender, address(this)),
-            "Marketplace not approved"
+            skillNFT.ownerOf(tokenId) == seller || 
+            skillNFT.isApprovedForAll(skillNFT.ownerOf(tokenId), msg.sender) || 
+            skillNFT.getApproved(tokenId) == msg.sender,
+            "Not your NFT"
         );
 
-        listings[tokenId] = Listing(msg.sender, price);
-        emit Listed(msg.sender, tokenId, price);
+        listings[tokenId] = Listing({
+            seller: seller,
+            price: price
+        });
+
+        emit SkillListed(seller, tokenId, price);
     }
+
+
 
     function cancelListing(uint256 tokenId) external {
         Listing memory listing = listings[tokenId];

@@ -3,6 +3,18 @@ import { useFlappymonStore } from '@/store/flappymonStore'
 import { useWalletStore } from '@/store/walletStore'
 import { useInventoryStore } from '@/store/inventoryStore'
 import { useSkillStore } from '@/store/skillStore'
+import { gameItemAbi } from '@/lib/contracts'
+import { publicClient } from '@/lib/walletClient'
+import { createPublicClient, createWalletClient, custom, http } from 'viem'
+import { sepolia } from 'viem/chains'
+
+const walletClient = createWalletClient({
+  chain: sepolia,
+  transport: custom((window as any).ethereum),
+})
+
+const GAME_ITEM_ADDRESS = process.env.NEXT_PUBLIC_GAME_ITEM_ADDRESS as `0x${string}`
+const BACKEND_WALLET = process.env.NEXT_PUBLIC_BACKEND_ADDRESS as `0x${string}`
 
 const PIPE_SPEED = -200
 const PIPE_INTERVAL = 1000
@@ -54,6 +66,8 @@ export class GameScene extends Phaser.Scene {
   }
 
   create() {
+    const address = useWalletStore.getState().address
+
     const equipped = useSkillStore.getState().selected
 
     this.floatingTexts = this.add.group()
@@ -214,8 +228,28 @@ export class GameScene extends Phaser.Scene {
     this.gameOverUI.setVisible(true)
     this.gameOverUI.setDepth(1000)
     this.scoreText.setVisible(false)
-
+    
     const address = useWalletStore.getState().address
+
+    if (address) {
+      const isApproved = await publicClient.readContract({
+        address: GAME_ITEM_ADDRESS,
+        abi: gameItemAbi.abi,
+        functionName: 'isApprovedForAll',
+        args: [address, BACKEND_WALLET],
+      })
+
+      if (!isApproved) {
+        await walletClient.writeContract({
+          address: GAME_ITEM_ADDRESS,
+          abi: gameItemAbi.abi,
+          functionName: 'setApprovalForAll',
+          args: [BACKEND_WALLET, true],
+          account: address,
+        })
+      }
+    }
+
     const store = useInventoryStore.getState()
     const usedItems = Object.entries(store.usedItemsThisSession)
     .filter(([_, count]) => count > 0)

@@ -8,10 +8,10 @@ export const backendAccount = privateKeyToAccount(PRIVATE_KEY)
 export const walletClient = createWalletClient({
   account: backendAccount,
   chain: sepolia,
-  transport: http(),
+  transport: http(process.env.NEXT_PUBLIC_RPC_URL!),
 })
 
 export const publicClient = createPublicClient({
   chain: sepolia,
-  transport: http(),
+  transport: http(process.env.NEXT_PUBLIC_RPC_URL!),
 })
