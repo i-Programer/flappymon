@@ -110,88 +110,22 @@ export class MarketplaceScene extends Phaser.Scene {
   }
 
   private async buySkill(tokenId: number, price: string) {
-    const wallet = (window as any).__wallet
-    const address = wallet?.address
-    const chainId = wallet?.chainId
-    const signTypedData = wallet?.signTypedDataAsync
+    const handler = (window as any).buySkill
   
-    if (!address || !chainId || !signTypedData) {
-      return this.showPopup('Wallet not connected')
+    if (!handler) {
+      return this.showPopup('Wallet handler not ready')
     }
-  
-    const FLAP_TOKEN = process.env.NEXT_PUBLIC_FLAP_TOKEN_ADDRESS as `0x${string}`
-    const MARKETPLACE = process.env.NEXT_PUBLIC_SKILL_NFT_MARKETPLACE_ADDRESS as `0x${string}`
   
     try {
-      this.showPopup('Generating permit signature...')
-  
-      const deadline = Math.floor(Date.now() / 1000) + 60 * 10
-  
-      const nonce = await wallet.readContract({
-        address: FLAP_TOKEN,
-        abi: flapTokenAbi.abi,
-        functionName: 'nonces',
-        args: [address],
-      }) as bigint
-  
-      const value = BigInt(price) // assume `price` is already in wei format
-  
-      const signature = await signTypedData({
-        domain: {
-          name: 'FLAPTOKEN',
-          version: '1',
-          chainId,
-          verifyingContract: FLAP_TOKEN,
-        },
-        types: {
-          Permit: [
-            { name: 'owner', type: 'address' },
-            { name: 'spender', type: 'address' },
-            { name: 'value', type: 'uint256' },
-            { name: 'nonce', type: 'uint256' },
-            { name: 'deadline', type: 'uint256' },
-          ],
-        },
-        primaryType: 'Permit',
-        message: {
-          owner: address,
-          spender: MARKETPLACE,
-          value,
-          nonce,
-          deadline,
-        },
-      })
-  
-      // Send the purchase request to backend
-      const res = await fetch('/api/marketplace/buy', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          address,
-          tokenId,
-          amount: 1,
-          price,
-          permit: {
-            signature,
-            deadline,
-          },
-        }),
-      })
-  
-      const data = await res.json()
-  
-      if (res.ok) {
-        this.showPopup(`Purchased skill #${tokenId} successfully!`)
-        this.scene.restart()
-      } else {
-        this.showPopup(`Purchase failed: ${data.error}`)
-      }
-  
+      this.showPopup('Buying skill...')
+      await handler(tokenId, price)
+      this.showPopup('Purchase success!')
+      this.scene.restart()
     } catch (err: any) {
-      console.error('[BUY_SKILL_ERROR]', err)
-      this.showPopup(`Error: ${err.message || 'Unknown error'}`)
+      this.showPopup(`Purchase failed: ${err.message}`)
     }
   }
+  
 
   private showPopup(msg: string) {
     const popup = this.add.text(this.scale.width / 2, this.scale.height - 100, msg, {

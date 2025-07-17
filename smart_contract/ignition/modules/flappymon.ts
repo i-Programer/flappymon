@@ -1,7 +1,7 @@
 // ignition/modules/FlappymonModule.ts
 import { buildModule } from '@nomicfoundation/hardhat-ignition/modules';
 
-export default buildModule('FlappymonModuleV4', (m) => {
+export default buildModule('FlappymonModuleV5', (m) => {
   const deployer = m.getAccount(0);
 
   const flappymon = m.contract('Flappymon', [

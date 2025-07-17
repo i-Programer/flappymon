@@ -16,9 +16,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const { address, tokenId, permit, price } = req.body
 
-    if (!address || !tokenId || !permit?.signature || !permit?.deadline) {
-      return res.status(400).json({ error: 'Missing required fields' })
+    if (!address || !tokenId || !permit || !permit.signature || !permit.deadline || !price) {
+      return res.status(400).json({ error: 'Missing required permit fields' })
     }
+       
 
     if (!price || isNaN(price)) {
       return res.status(400).json({ error: 'Invalid price' })
@@ -35,13 +36,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       args: [
         address,
         MARKETPLACE_ADDRESS,
-        price,
+        BigInt(permit.value),
         BigInt(permit.deadline),
         v,
         r,
         s,
       ],
     })
+    
 
     // ✅ Step 4: Wait for permit tx to be mined
     await publicClient.waitForTransactionReceipt({ hash: permitTxHash })

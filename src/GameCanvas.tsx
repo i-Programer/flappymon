@@ -6,6 +6,7 @@ import { WalletOptions } from './components/walletOptions'
 import { Account } from './components/account'
 import { StoreModal } from './components/storeModal'
 import { flapTokenAbi, } from './lib/contracts'
+import { parseSignature } from 'viem'
 
 import {
   useAccount,
@@ -450,15 +451,13 @@ export default function GameCanvas() {
   }
 
   async function buySkill(tokenId: number, price: string) {
-    if (!address || !signTypedDataAsync) {
+    if (!address || !signTypedDataAsync || !walletClient) {
       throw new Error('Wallet not connected')
     }
   
     const deadline = BigInt(Math.floor(Date.now() / 1000) + 60 * 10)
     const value = BigInt(price)
-    const chainId = chain?.id 
-  
-    let signature: string | undefined
+    const chainId = chain?.id
   
     try {
       const nonce = await publicClient.readContract({
@@ -468,7 +467,7 @@ export default function GameCanvas() {
         args: [address],
       }) as bigint
   
-      signature = await signTypedDataAsync({
+      const signature = await signTypedDataAsync({
         domain: {
           name: 'FLAPTOKEN',
           version: '1',
@@ -494,26 +493,18 @@ export default function GameCanvas() {
         },
       })
   
-      const res = await fetch('/api/marketplace/buy', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          address,
-          tokenId,
-          price,
-          permit: {
-            signature,
-            deadline,
-          },
-        }),
+      const { v, r, s } = parseSignature(signature)
+  
+      // ✅ Call buySkillWithPermit() directly from frontend
+      const txHash = await walletClient.writeContract({
+        address: SKILL_MARKETPLACE_ADDRESS,
+        abi: skillMarketplaceAbi.abi,
+        functionName: 'buySkillWithPermit',
+        args: [BigInt(tokenId), value, deadline, v, r, s],
+        account: address, // must be set explicitly
       })
   
-      if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.error || 'Failed to buy skill')
-      }
-  
-      return true
+      return txHash
     } catch (err: any) {
       console.error('[BUY_SKILL_ERROR]', err)
       throw new Error(err.message || 'Unknown error')

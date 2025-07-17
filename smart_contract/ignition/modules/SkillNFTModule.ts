@@ -1,7 +1,7 @@
 // ignition/modules/SkillNFTModule.ts
 import { buildModule } from '@nomicfoundation/hardhat-ignition/modules';
 
-export default buildModule('SkillNFTModuleV3', (m) => {
+export default buildModule('SkillNFTModuleV4', (m) => {
   const deployer = m.getAccount(0);
 
   const skillNFT = m.contract('SkillNFT', [

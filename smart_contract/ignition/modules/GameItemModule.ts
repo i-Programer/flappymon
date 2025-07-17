@@ -1,6 +1,6 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 
-export default buildModule("GameItemModuleV3", (m) => {
+export default buildModule("GameItemModuleV4", (m) => {
   const admin = m.getAccount(0);
   const minter = "0xECe8D2186b8C75d0AAa2764D349DD95cF960F69b";
   const flapToken = "0x416A0DB4cD78A4d822FBbD998e51199b1927aa0C";
