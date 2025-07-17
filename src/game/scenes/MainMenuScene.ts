@@ -139,7 +139,7 @@ export class MainMenuScene extends Phaser.Scene {
       }
     });
 
-    const marketplaceButton = this.add.text(width / 2, 690, 'Marketplace', {
+    const marketplaceButton = this.add.text(130, 50, 'Marketplace', {
       fontSize: '28px',
       backgroundColor: '#555555',
       padding: { x: 20, y: 10 },

@@ -26,6 +26,7 @@ export class GameScene extends Phaser.Scene {
   private scoreText!: Phaser.GameObjects.Text
   private debugText!: Phaser.GameObjects.Text
   private gameOverUI!: Phaser.GameObjects.Container
+  private gameOverBtn!: Phaser.GameObjects.Container
   private finalScoreText?: Phaser.GameObjects.Text
   private floatingTexts!: Phaser.GameObjects.Group
   private pipeCollider?: Phaser.Physics.Arcade.Collider
@@ -90,6 +91,7 @@ export class GameScene extends Phaser.Scene {
     this.createScoreText()
     this.createDebugText()
     this.createGameOverUI()
+    this.createGameOverBtn()
 
     this.pipes = this.physics.add.group({ immovable: true, allowGravity: false })
 
@@ -165,7 +167,15 @@ export class GameScene extends Phaser.Scene {
       color: '#ffffff',
     }).setOrigin(0.5)
 
-    const restartButton = this.add.text(width / 2, height / 2, 'Restart', {
+    this.gameOverUI = this.add.container(0, 0, [bg, gameOverText])
+    this.gameOverUI.setVisible(false)
+  }
+
+  private createGameOverBtn() {
+    const width = this.scale.width
+    const height = this.scale.height
+
+    const restartButton = this.add.text(width / 2, height / 2 + 10, 'Restart', {
       fontSize: '32px',
       backgroundColor: '#00aa00',
       padding: { x: 20, y: 10 },
@@ -177,7 +187,7 @@ export class GameScene extends Phaser.Scene {
       this.scene.restart()
     })
 
-    const mainMenuButton = this.add.text(width / 2, height / 2 + 60, 'Main Menu', {
+    const mainMenuButton = this.add.text(width / 2, height / 2 + 80, 'Main Menu', {
       fontSize: '28px',
       backgroundColor: '#555555',
       padding: { x: 20, y: 10 },
@@ -188,8 +198,8 @@ export class GameScene extends Phaser.Scene {
       this.scene.start('MainMenuScene')
     })
 
-    this.gameOverUI = this.add.container(0, 0, [bg, gameOverText, restartButton, mainMenuButton])
-    this.gameOverUI.setVisible(false)
+    this.gameOverBtn = this.add.container(0, 0, [restartButton, mainMenuButton])
+    this.gameOverBtn.setVisible(false)
   }
 
   private cleanupBeforeRestart() {
@@ -223,12 +233,12 @@ export class GameScene extends Phaser.Scene {
     this.player.setVelocity(0)
     this.player.setGravityY(0)
 
-    this.physics.pause()
-
     this.gameOverUI.setVisible(true)
     this.gameOverUI.setDepth(1000)
     this.scoreText.setVisible(false)
-    
+
+    this.physics.pause()
+
     const address = useWalletStore.getState().address
 
     if (address) {
@@ -290,6 +300,9 @@ export class GameScene extends Phaser.Scene {
       store.resetUsedItems()
     }
 
+    this.gameOverBtn.setVisible(true)
+    this.gameOverBtn.setDepth(1001)
+    
     this.finalScoreText?.destroy()
     this.finalScoreText = this.add.text(this.scale.width / 2, this.scale.height / 2 - 30, `Final Score: ${this.score}`, {
       fontSize: '28px',
