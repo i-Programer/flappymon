@@ -262,23 +262,21 @@ export class SkillScene extends Phaser.Scene {
   }
   
   private async cancelListing(skill: SkillNFT) {
-    try {
-      const res = await fetch('/api/marketplace/cancel', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tokenId: skill.tokenId }),
-      })
-      const data = await res.json()
-      if (res.ok) {
-        this.showPopup(`Listing cancelled!\nTx Hash:\n${data.txHash}`)
-        this.scene.restart() // refresh skill listing state
-      } else {
-        this.showPopup(`Cancel failed: ${data.error}`)
-      }
-    } catch (err) {
-      this.showPopup('Network error during cancel.')
+    const cancelListing = (window as any).cancelListing
+    if (!cancelListing) {
+      this.showPopup('Cancel function not available')
+      return
     }
-  }  
+  
+    try {
+      const txHash = await cancelListing(skill.tokenId)
+      this.showPopup(`Listing cancelled!\nTx Hash:\n${txHash}`)
+      this.scene.restart()
+    } catch (err: any) {
+      this.showPopup(`Cancel failed: ${err.message}`)
+    }
+  }
+  
   
   private async handleUnlock() {
     const [a, b] = this.selectedSkills

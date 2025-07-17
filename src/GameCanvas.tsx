@@ -24,6 +24,7 @@ import { encodeFunctionData } from 'viem'
 import skillNftAbi from '@/abi/SkillNFT.json'
 import { createWalletClient, custom } from 'viem'
 import { sepolia } from 'viem/chains'
+import skillMarketplaceAbi from '@/abi/SkillMarketplace.json'
 
 const walletClient = createWalletClient({
   chain: sepolia,
@@ -109,6 +110,7 @@ export default function GameCanvas() {
       w.unlockSkills = unlockSkills
       w.sellSkill = sellSkill
       w.buySkill = buySkill 
+      w.cancelListing = cancelListing 
 
       const game = createPhaserGame(gameContainerRef.current.id)
       return () => {
@@ -118,6 +120,7 @@ export default function GameCanvas() {
         delete (window as any).unlockSkills;
         delete (window as any).sellSkill;
         delete (window as any).buySkill;
+        delete (window as any).cancelListing;
         game.destroy(true)
       }
     }
@@ -516,6 +519,23 @@ export default function GameCanvas() {
       throw new Error(err.message || 'Unknown error')
     }
   }
+ 
+  async function cancelListing(tokenId: number) {
+    const address = (window as any).__wallet?.address
+    if (!address) throw new Error('Wallet not connected')
+
+    return await walletClient.writeContract({
+      address: SKILL_MARKETPLACE_ADDRESS,
+      abi: skillMarketplaceAbi.abi,
+      functionName: 'cancelListing',
+      args: [tokenId],
+      account: address, // ✅ PENTING: harus user wallet
+    })
+  }
+  
+  useEffect(() => {
+    ;(window as any).cancelListing = cancelListing
+  }, [address, signMessageAsync])
   
   
   async function sellSkill(tokenId: number, priceInFLAP: string) {
