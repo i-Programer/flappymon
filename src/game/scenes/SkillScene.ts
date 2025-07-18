@@ -12,13 +12,29 @@ export class SkillScene extends Phaser.Scene {
   private unlockButton!: Phaser.GameObjects.Text
   private cancelButton!: Phaser.GameObjects.Text
 
+  private background!: Phaser.GameObjects.Image;
+  private backgroundSpeed = 0.3; // Adjust for scroll speed
 
   constructor() {
     super({ key: 'SkillScene' })
   }
 
   async create() {
-    this.cameras.main.setBackgroundColor('#1e1e1e')
+    const { width, height } = this.scale;
+    
+    this.background = this.add.image(0, 0, 'bg_sky')
+      .setOrigin(0, 0)
+      .setDisplaySize(width * 2, height)
+      .setScrollFactor(0)
+      .setDepth(-10); // behind everything
+
+    this.add.text(this.scale.width / 2, this.scale.height - 40, '← Back', {
+      fontSize: '20px',
+      backgroundColor: '#444',
+      padding: { x: 20, y: 10 },
+      color: '#ffffff',
+    }).setOrigin(0.5).setInteractive()
+      .on('pointerdown', () => this.scene.start('MainMenuScene'))
 
     const address = useWalletStore.getState().address
     const { skills, setSelected } = useSkillStore.getState()
@@ -32,8 +48,18 @@ export class SkillScene extends Phaser.Scene {
     }
 
     this.add.text(this.scale.width / 2, 40, 'Skill Inventory', {
-      fontSize: '32px',
+      fontSize: '48px',
       color: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 6, // Adjust thickness
+      shadow: {
+        offsetX: 2,
+        offsetY: 2,
+        color: '#000000',
+        blur: 4,
+        stroke: true,
+        fill: true
+      }
     }).setOrigin(0.5)
 
     // === Left Panel: Skill List ===
@@ -329,5 +355,15 @@ export class SkillScene extends Phaser.Scene {
       duration: 2500,
       onComplete: () => popup.destroy(),
     })
+  }
+
+  update() {
+    // Move background left
+    this.background.x -= this.backgroundSpeed;
+
+    // Reset when half of it has moved off-screen
+    if (this.background.x <= -this.background.displayWidth / 2) {
+      this.background.x = 0;
+    }
   }
 }

@@ -6,12 +6,29 @@ import { flapTokenAbi } from '@/lib/contracts'
 const skillNames = ['Dash', 'Disappear', 'Gap Manipulation', 'Pipe Destroyer', 'Floating']
 
 export class MarketplaceScene extends Phaser.Scene {
+  private background!: Phaser.GameObjects.Image;
+  private backgroundSpeed = 0.3; // Adjust for scroll speed
+
   constructor() {
     super({ key: 'MarketplaceScene' })
   }
 
   async create() {
-    this.cameras.main.setBackgroundColor('#111')
+    const { width, height } = this.scale;
+
+    this.add.text(this.scale.width / 2, this.scale.height - 40, '← Back', {
+      fontSize: '20px',
+      backgroundColor: '#444',
+      padding: { x: 20, y: 10 },
+      color: '#ffffff',
+    }).setOrigin(0.5).setInteractive()
+      .on('pointerdown', () => this.scene.start('MainMenuScene'))
+    
+    this.background = this.add.image(0, 0, 'bg_sky')
+      .setOrigin(0, 0)
+      .setDisplaySize(width * 2, height)
+      .setScrollFactor(0)
+      .setDepth(-10); // behind everything
 
     const address = useWalletStore.getState().address
     if (!address) {
@@ -23,8 +40,18 @@ export class MarketplaceScene extends Phaser.Scene {
     }
 
     this.add.text(this.scale.width / 2, 40, 'Skill Marketplace', {
-      fontSize: '32px',
+      fontSize: '48px',
       color: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 6, // Adjust thickness
+      shadow: {
+        offsetX: 2,
+        offsetY: 2,
+        color: '#000000',
+        blur: 4,
+        stroke: true,
+        fill: true
+      }
     }).setOrigin(0.5)
 
     const res = await fetch('/api/marketplace/get_all_listings')
@@ -82,16 +109,6 @@ export class MarketplaceScene extends Phaser.Scene {
         row++
     }
     }
-
-
-    // Back button
-    this.add.text(this.scale.width / 2, this.scale.height - 40, '← Back', {
-      fontSize: '20px',
-      backgroundColor: '#444',
-      padding: { x: 20, y: 10 },
-      color: '#ffffff',
-    }).setOrigin(0.5).setInteractive()
-      .on('pointerdown', () => this.scene.start('MainMenuScene'))
   }
 
   private async cancelListing(tokenId: number) {
@@ -141,5 +158,15 @@ export class MarketplaceScene extends Phaser.Scene {
       duration: 2500,
       onComplete: () => popup.destroy(),
     })
+  }
+
+  update() {
+    // Move background left
+    this.background.x -= this.backgroundSpeed;
+
+    // Reset when half of it has moved off-screen
+    if (this.background.x <= -this.background.displayWidth / 2) {
+      this.background.x = 0;
+    }
   }
 }

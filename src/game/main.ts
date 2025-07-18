@@ -4,6 +4,8 @@ import { MainMenuScene } from './scenes/MainMenuScene';
 import { CharacterScene } from './scenes/CharacterScene';
 import { SkillScene } from './scenes/SkillScene';
 import { MarketplaceScene } from './scenes/MarketplaceScene';
+import { Boot } from './scenes/Boot';
+import { Preloader } from './scenes/Preloader';
 
 export const createPhaserGame = (parentId: string) => {
   const game = new Phaser.Game({
@@ -11,7 +13,7 @@ export const createPhaserGame = (parentId: string) => {
     width: window.innerWidth,
     height: window.innerHeight,
     backgroundColor: '#87CEEB', // Light sky blue (customize this)
-    scene: [MainMenuScene, GameScene, CharacterScene, SkillScene, MarketplaceScene],
+    scene: [Boot, MainMenuScene, GameScene, CharacterScene, SkillScene, MarketplaceScene],
     parent: parentId,
     physics: {
         default: 'arcade',
