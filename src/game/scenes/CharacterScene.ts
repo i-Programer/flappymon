@@ -19,6 +19,16 @@ export class CharacterScene extends Phaser.Scene {
       backgroundColor: '#444',
       padding: { x: 20, y: 10 },
       color: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 6, // Adjust thickness
+      shadow: {
+        offsetX: 2,
+        offsetY: 2,
+        color: '#000000',
+        blur: 4,
+        stroke: true,
+        fill: true
+      }
     }).setOrigin(0.5).setInteractive()
       .on('pointerdown', () => this.scene.start('MainMenuScene'))
     
@@ -35,6 +45,16 @@ export class CharacterScene extends Phaser.Scene {
       this.add.text(100, 100, 'Connect your wallet first.', {
         fontSize: '20px',
         color: '#ffffff',
+        stroke: '#000000',
+          strokeThickness: 6, // Adjust thickness
+          shadow: {
+            offsetX: 2,
+            offsetY: 2,
+            color: '#000000',
+            blur: 4,
+            stroke: true,
+            fill: true
+          }
       })
       return
     }
@@ -45,6 +65,16 @@ export class CharacterScene extends Phaser.Scene {
       this.add.text(100, 100, 'You dont own any Flappymon yet.', {
         fontSize: '20px',
         color: '#ffffff',
+        stroke: '#000000',
+          strokeThickness: 6, // Adjust thickness
+          shadow: {
+            offsetX: 2,
+            offsetY: 2,
+            color: '#000000',
+            blur: 4,
+            stroke: true,
+            fill: true
+          }
       })
       return
     }
@@ -86,6 +116,16 @@ export class CharacterScene extends Phaser.Scene {
         this.add.text(x, y + 100, `${nft.name}`, {
           fontSize: '18px',
           color: '#ffffff',
+          stroke: '#000000',
+          strokeThickness: 6, // Adjust thickness
+          shadow: {
+            offsetX: 2,
+            offsetY: 2,
+            color: '#000000',
+            blur: 4,
+            stroke: true,
+            fill: true
+          }
         }).setOrigin(0.5)
       })
       this.load.start()

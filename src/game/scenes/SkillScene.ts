@@ -43,6 +43,16 @@ export class SkillScene extends Phaser.Scene {
       this.add.text(100, 100, 'Connect your wallet first.', {
         fontSize: '20px',
         color: '#ffffff',
+        stroke: '#000000',
+        strokeThickness: 6, // Adjust thickness
+        shadow: {
+          offsetX: 2,
+          offsetY: 2,
+          color: '#000000',
+          blur: 4,
+          stroke: true,
+          fill: true
+        }
       })
       return
     }
@@ -66,6 +76,16 @@ export class SkillScene extends Phaser.Scene {
     this.add.text(100, 80, 'Your Skills', {
       fontSize: '24px',
       color: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 6, // Adjust thickness
+      shadow: {
+        offsetX: 2,
+        offsetY: 2,
+        color: '#000000',
+        blur: 4,
+        stroke: true,
+        fill: true
+      }
     })
 
     for (let i = 0; i < skills.length; i++) {
@@ -114,32 +134,72 @@ export class SkillScene extends Phaser.Scene {
         this.add.text(x, y + 70, `${skillNames[skill.skillType]} Lv${skill.skillLevel}`, {
           fontSize: '16px',
           color: '#ffffff',
+          stroke: '#000000',
+          strokeThickness: 6, // Adjust thickness
+          shadow: {
+            offsetX: 2,
+            offsetY: 2,
+            color: '#000000',
+            blur: 4,
+            stroke: true,
+            fill: true
+          }
         }).setOrigin(0.5)
     
     
         if (isListed) {
-          this.add.text(x, y + 90, 'Listed', {
+          this.add.text(x, y + 110, 'Listed', {
             fontSize: '14px',
             color: '#ff4444',
             backgroundColor: '#222',
             padding: { x: 8, y: 4 },
+            stroke: '#000000',
+            strokeThickness: 6, // Adjust thickness
+            shadow: {
+              offsetX: 2,
+              offsetY: 2,
+              color: '#000000',
+              blur: 4,
+              stroke: true,
+              fill: true
+            }
           }).setOrigin(0.5)
 
-          this.add.text(x, y + 110, 'Cancel Listing', {
+          this.add.text(x, y + 130, 'Cancel Listing', {
             fontSize: '14px',
             color: '#ffaa00',
             backgroundColor: '#333',
             padding: { x: 6, y: 4 },
+            stroke: '#000000',
+            strokeThickness: 6, // Adjust thickness
+            shadow: {
+              offsetX: 2,
+              offsetY: 2,
+              color: '#000000',
+              blur: 4,
+              stroke: true,
+              fill: true
+            }
           })
             .setInteractive({ useHandCursor: true })
             .on('pointerdown', () => this.cancelListing(skill))
             .setOrigin(0.5)
         } else {
-          this.add.text(x, y + 90, 'Sell', {
+          this.add.text(x, y + 110, 'Sell', {
             fontSize: '14px',
             color: '#00ff00',
             backgroundColor: '#222',
             padding: { x: 8, y: 4 },
+            stroke: '#000000',
+            strokeThickness: 6, // Adjust thickness
+            shadow: {
+              offsetX: 2,
+              offsetY: 2,
+              color: '#000000',
+              blur: 4,
+              stroke: true,
+              fill: true
+            }
           })
             .setInteractive({ useHandCursor: true })
             .on('pointerdown', () => this.sellSkill(skill))
@@ -152,17 +212,37 @@ export class SkillScene extends Phaser.Scene {
      
     // === Right Panel: Combination Station ===
     const centerX = this.scale.width * 0.65
-    const stationY = 160
+    const stationY = 180
 
     this.add.rectangle(centerX, stationY, 300, 200, 0x333333).setStrokeStyle(2, 0xffffff)
     this.add.text(centerX, stationY - 80, 'Combination Station', {
       fontSize: '20px',
       color: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 6, // Adjust thickness
+      shadow: {
+        offsetX: 2,
+        offsetY: 2,
+        color: '#000000',
+        blur: 4,
+        stroke: true,
+        fill: true
+      }
     }).setOrigin(0.5)
 
-    this.comboText = this.add.text(centerX, stationY + 100, 'Drop 2 skills here to combine', {
+    this.comboText = this.add.text(centerX, stationY + 120, 'Drop 2 skills here to combine', {
       fontSize: '14px',
       color: '#cccccc',
+      stroke: '#000000',
+      strokeThickness: 6, // Adjust thickness
+      shadow: {
+        offsetX: 2,
+        offsetY: 2,
+        color: '#000000',
+        blur: 4,
+        stroke: true,
+        fill: true
+      }
     }).setOrigin(0.5)
 
     // === Action Buttons ===
@@ -171,6 +251,16 @@ export class SkillScene extends Phaser.Scene {
       backgroundColor: '#006600',
       padding: { x: 16, y: 8 },
       color: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 6, // Adjust thickness
+      shadow: {
+        offsetX: 2,
+        offsetY: 2,
+        color: '#000000',
+        blur: 4,
+        stroke: true,
+        fill: true
+      }
     })
       .setOrigin(0.5)
       .setInteractive()
@@ -181,6 +271,16 @@ export class SkillScene extends Phaser.Scene {
       backgroundColor: '#004488',
       padding: { x: 16, y: 8 },
       color: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 6, // Adjust thickness
+      shadow: {
+        offsetX: 2,
+        offsetY: 2,
+        color: '#000000',
+        blur: 4,
+        stroke: true,
+        fill: true
+      }
     })
       .setOrigin(0.5)
       .setInteractive()
@@ -191,6 +291,16 @@ export class SkillScene extends Phaser.Scene {
       backgroundColor: '#880000',
       padding: { x: 16, y: 6 },
       color: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 6, // Adjust thickness
+      shadow: {
+        offsetX: 2,
+        offsetY: 2,
+        color: '#000000',
+        blur: 4,
+        stroke: true,
+        fill: true
+      }
     })
       .setOrigin(0.5)
       .setInteractive()
@@ -207,6 +317,16 @@ export class SkillScene extends Phaser.Scene {
       backgroundColor: '#444',
       padding: { x: 20, y: 10 },
       color: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 6, // Adjust thickness
+      shadow: {
+        offsetX: 2,
+        offsetY: 2,
+        color: '#000000',
+        blur: 4,
+        stroke: true,
+        fill: true
+      }
     }).setOrigin(0.5).setInteractive()
 
     backButton.on('pointerdown', () => {
@@ -347,6 +467,16 @@ export class SkillScene extends Phaser.Scene {
       color: '#00ffff',
       backgroundColor: '#111',
       padding: { x: 20, y: 10 },
+      stroke: '#000000',
+      strokeThickness: 6, // Adjust thickness
+      shadow: {
+        offsetX: 2,
+        offsetY: 2,
+        color: '#000000',
+        blur: 4,
+        stroke: true,
+        fill: true
+      }
     }).setOrigin(0.5).setDepth(999)
 
     this.tweens.add({

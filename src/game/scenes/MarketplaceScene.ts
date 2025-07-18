@@ -35,6 +35,16 @@ export class MarketplaceScene extends Phaser.Scene {
       this.add.text(100, 100, 'Connect your wallet first.', {
         fontSize: '20px',
         color: '#ffffff',
+        stroke: '#000000',
+        strokeThickness: 6, // Adjust thickness
+        shadow: {
+          offsetX: 2,
+          offsetY: 2,
+          color: '#000000',
+          blur: 4,
+          stroke: true,
+          fill: true
+        }
       })
       return
     }
@@ -76,11 +86,31 @@ export class MarketplaceScene extends Phaser.Scene {
         this.add.text(x, y + 70, `${skillNames[skill.skillType]} Lv${skill.skillLevel}`, {
         fontSize: '16px',
         color: '#ffffff',
+        stroke: '#000000',
+        strokeThickness: 6, // Adjust thickness
+        shadow: {
+          offsetX: 2,
+          offsetY: 2,
+          color: '#000000',
+          blur: 4,
+          stroke: true,
+          fill: true
+        }
         }).setOrigin(0.5)
 
         this.add.text(x, y + 90, `${Number(skill.price) / 1e18} FLAP`, {
         fontSize: '14px',
         color: '#ffff00',
+        stroke: '#000000',
+        strokeThickness: 6, // Adjust thickness
+        shadow: {
+          offsetX: 2,
+          offsetY: 2,
+          color: '#000000',
+          blur: 4,
+          stroke: true,
+          fill: true
+        }
         }).setOrigin(0.5)
 
         const isUserOwned = skill.seller.toLowerCase() === address.toLowerCase()
@@ -90,6 +120,16 @@ export class MarketplaceScene extends Phaser.Scene {
         backgroundColor: isUserOwned ? '#aa5500' : '#006600',
         padding: { x: 6, y: 4 },
         color: '#ffffff',
+        stroke: '#000000',
+        strokeThickness: 6, // Adjust thickness
+        shadow: {
+          offsetX: 2,
+          offsetY: 2,
+          color: '#000000',
+          blur: 4,
+          stroke: true,
+          fill: true
+        }
         }).setOrigin(0.5).setInteractive()
 
         btn.on('pointerdown', () => {
@@ -150,6 +190,16 @@ export class MarketplaceScene extends Phaser.Scene {
       backgroundColor: '#222',
       color: '#00ffff',
       padding: { x: 16, y: 8 },
+      stroke: '#000000',
+      strokeThickness: 6, // Adjust thickness
+      shadow: {
+        offsetX: 2,
+        offsetY: 2,
+        color: '#000000',
+        blur: 4,
+        stroke: true,
+        fill: true
+      }
     }).setOrigin(0.5).setDepth(999)
 
     this.tweens.add({

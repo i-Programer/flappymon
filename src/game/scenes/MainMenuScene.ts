@@ -21,6 +21,16 @@ export class MainMenuScene extends Phaser.Scene {
       color: '#00ffff',
       backgroundColor: '#111',
       padding: { x: 20, y: 10 },
+      stroke: '#000000',
+      strokeThickness: 6, // Adjust thickness
+      shadow: {
+        offsetX: 2,
+        offsetY: 2,
+        color: '#000000',
+        blur: 4,
+        stroke: true,
+        fill: true
+      }
     }).setOrigin(0.5).setDepth(999);
 
     this.tweens.add({
@@ -45,6 +55,16 @@ export class MainMenuScene extends Phaser.Scene {
       color: rarityColors[rarity],
       backgroundColor: '#111',
       padding: { x: 20, y: 10 },
+      stroke: '#000000',
+      strokeThickness: 6, // Adjust thickness
+      shadow: {
+        offsetX: 2,
+        offsetY: 2,
+        color: '#000000',
+        blur: 4,
+        stroke: true,
+        fill: true
+      }
     }).setOrigin(0.5).setDepth(999);
 
     this.tweens.add({
@@ -88,6 +108,16 @@ export class MainMenuScene extends Phaser.Scene {
       : 'Wallet Not Connected', {
       fontSize: '20px',
       color: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 6, // Adjust thickness
+      shadow: {
+        offsetX: 2,
+        offsetY: 2,
+        color: '#000000',
+        blur: 4,
+        stroke: true,
+        fill: true
+      }
     }).setOrigin(0.5);
 
     const startButton = this.add.text(width / 2, 280, 'Start Game', {
