@@ -149,6 +149,17 @@ export class MainMenuScene extends Phaser.Scene {
     marketplaceButton.on('pointerdown', () => {
       this.scene.start('MarketplaceScene')
     });
+
+    const whitepaperButton = this.add.text(130, 100, 'Whitepaper', {
+      fontSize: '28px',
+      backgroundColor: '#444444',
+      padding: { x: 20, y: 10 },
+      color: '#ffffff',
+    }).setOrigin(0.5).setInteractive();
+    
+    whitepaperButton.on('pointerdown', () => {
+      window.open('https://flappymon-whitepaper.vercel.app/', '_blank');
+    });    
     
     this.handleGachaFail = (e: any) => {
       const message = typeof e.detail === 'string' ? e.detail : 'Unknown error';
