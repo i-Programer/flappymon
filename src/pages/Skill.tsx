@@ -14,6 +14,7 @@ import {
 } from "@/lib/contracts";
 import { createWalletClient, custom } from "viem";
 import { sepolia } from "viem/chains";
+import Image from "next/image";
 
 const BACKEND_WALLET = process.env.NEXT_PUBLIC_BACKEND_ADDRESS as `0x${string}`;
 
@@ -22,7 +23,7 @@ const BACKEND_WALLET = process.env.NEXT_PUBLIC_BACKEND_ADDRESS as `0x${string}`;
 //     transport: custom((window as any).ethereum),
 // });
 
-const skill = () => {
+const Skill = () => {
     const page = "Inventory";
     const [mounted, setMounted] = useState(false);
     const { data: walletClient } = useWalletClient();
@@ -419,5 +420,5 @@ const skill = () => {
     );
 };
 
-export default skill;
+export default Skill;
 

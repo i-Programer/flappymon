@@ -15,6 +15,7 @@ import {
 import { createWalletClient, custom } from "viem";
 import { sepolia } from "viem/chains";
 import { StoreModal } from "@/components/storeModal";
+import Image from "next/image";
 
 const BACKEND_WALLET = process.env.NEXT_PUBLIC_BACKEND_ADDRESS as `0x${string}`;
 
@@ -35,7 +36,7 @@ interface GameItem {
     uses: number;
 }
 
-const inventory = () => {
+const Inventory = () => {
     const page = "Inventory";
     const [mounted, setMounted] = useState(false);
     const { data: walletClient } = useWalletClient();
@@ -433,5 +434,5 @@ const inventory = () => {
     );
 };
 
-export default inventory;
+export default Inventory;
 

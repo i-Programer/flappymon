@@ -12,8 +12,9 @@ import {
     flapTokenAbi,
 } from "@/lib/contracts";
 import { publicClient } from "@/lib/viemClient";
+import Image from "next/image";
 
-const marketplace = () => {
+const Marketplace = () => {
     const page = "Marketplace";
     const [mounted, setMounted] = useState(false);
     const { data: walletClient } = useWalletClient();
@@ -350,5 +351,5 @@ const marketplace = () => {
     );
 };
 
-export default marketplace;
+export default Marketplace;
 

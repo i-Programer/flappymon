@@ -3,11 +3,12 @@ import Navbar from "@/components/website/Navbar";
 import { useEffect, useState } from "react";
 import { readContract } from "@wagmi/core";
 import { useAccount, useSignMessage, useSignTypedData } from "wagmi";
-import { Dice5, MoveUpRight, Target } from "lucide-react";
+import { Dice5, Link, MoveUpRight, Target } from "lucide-react";
 import { FlappymonNFT, SkillNFT } from "@/types/nft";
 import { flapTokenAbi, flapTokenAddress } from "@/lib/contracts";
 import { parseUnits } from "viem";
 import { publicClient } from "@/lib/viemClient";
+import Image from "next/image";
 
 const BACKEND_WALLET = process.env.NEXT_PUBLIC_BACKEND_ADDRESS as `0x${string}`;
 const FLAP_COST = parseUnits("50", 18);
@@ -435,12 +436,12 @@ export default function Home() {
                             battler where gameplay meets NFTs. You collect,
                             trade, and level up your <em>Flappymons</em>, equip
                             them with powerful skills, and dominate the arena —
-                            all while fully owning your in-game assets. It's
+                            all while fully owning your in-game assets. Its
                             fast-paced, skill-based, and economically driven
                             through our native token <code>$FLAP</code>.
                         </p>
                         <a
-                            href="/whitepaper"
+                            href="https://flappymon-whitepaper.vercel.app/"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-block bg-yellow-400 hover:bg-yellow-500 text-black font-semibold px-6 py-3 rounded-2xl shadow-lg transition duration-200"
@@ -468,12 +469,12 @@ export default function Home() {
                             stats, unlock special moves, and gain the edge in
                             battle.
                         </p>
-                        <a
+                        <Link
                             href="/marketplace"
                             className="inline-block bg-black hover:bg-neutral-800 text-white font-semibold px-8 py-4 rounded-2xl shadow-lg transition duration-200"
                         >
                             🛒 Go to Marketplace
-                        </a>
+                        </Link>
                     </div>
                 </section>
 
@@ -491,7 +492,7 @@ export default function Home() {
                         </h2>
 
                         {/* Marketplace */}
-                        <a
+                        <Link
                             href="/marketplace"
                             className="group flex flex-col gap-1 w-full hover:text-yellow-500 transition duration-150"
                         >
@@ -513,12 +514,12 @@ export default function Home() {
                                 Browse and purchase new skill NFTs from other
                                 players.
                             </p>
-                        </a>
+                        </Link>
 
                         <hr className="border-t border-neutral-300 dark:border-neutral-700" />
 
                         {/* Inventory */}
-                        <a
+                        <Link
                             href="/inventory"
                             className="group flex flex-col gap-1 w-full hover:text-yellow-500 transition duration-150"
                         >
@@ -539,12 +540,12 @@ export default function Home() {
                             <p className="text-md text-neutral-500 dark:text-neutral-400">
                                 View, equip, and manage your owned skill NFTs.
                             </p>
-                        </a>
+                        </Link>
 
                         <hr className="border-t border-neutral-300 dark:border-neutral-700" />
 
                         {/* Whitepaper */}
-                        <a
+                        <Link
                             href="/whitepaper"
                             className="group flex flex-col gap-1 w-full hover:text-yellow-500 transition duration-150"
                         >
@@ -566,7 +567,7 @@ export default function Home() {
                                 Dive into the technical design and economic
                                 model behind the game.
                             </p>
-                        </a>
+                        </Link>
                     </div>
                 </section>
 
@@ -586,21 +587,21 @@ export default function Home() {
                         progress, and get the latest updates.
                     </p>
                     <div className="flex gap-6 flex-wrap justify-center">
-                        <a
+                        <Link
                             href="mailto:support@flappymon.com"
                             className="w-16 h-16 rounded-full bg-neutral-200 dark:bg-neutral-800 flex items-center justify-center text-neutral-800 dark:text-white text-2xl hover:bg-neutral-300 dark:hover:bg-neutral-700 transition"
                             aria-label="Email"
-                        ></a>
-                        <a
+                        ></Link>
+                        <Link
                             href="https://discord.gg/your-server"
                             className="w-16 h-16 rounded-full bg-indigo-500 text-white flex items-center justify-center text-2xl hover:bg-indigo-600 transition"
                             aria-label="Discord"
-                        ></a>
-                        <a
+                        ></Link>
+                        <Link
                             href="https://x.com/yourusername"
                             className="w-16 h-16 rounded-full bg-black text-white flex items-center justify-center text-2xl hover:bg-neutral-800 transition"
                             aria-label="X"
-                        ></a>
+                        ></Link>
                     </div>
                 </section>
             </div>

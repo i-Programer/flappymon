@@ -59,7 +59,7 @@ const NavbarMarketplace: React.FC<NavbarProps> = ({
                             <ul className="flex flex-col gap-y-2 p-4">
                                 <li>
                                     <Link
-                                        href="/marketplace"
+                                        href="/Marketplace"
                                         className="p-3 w-64 flex flex-row gap-x-1 justify-start items-center rounded-3xl shadow-md border border-slate-500/80 text-xl font-bold hover:text-blue-500 transition-colors duration-200"
                                     >
                                         <Store size={30} /> Marketplace
@@ -67,23 +67,23 @@ const NavbarMarketplace: React.FC<NavbarProps> = ({
                                 </li>
                                 <li>
                                     <Link
-                                        href="/inventory"
+                                        href="/Inventory"
                                         className="p-3 w-64 flex flex-row gap-x-1 justify-start items-center rounded-3xl shadow-md border border-slate-500/80 text-xl font-bold hover:text-blue-500 transition-colors duration-200"
                                     >
                                         <Package size={30} /> Inventory
                                     </Link>
                                 </li>
                                 <li>
-                                    <Link
-                                        href="/whitepaper"
+                                    <a
+                                        href="https://flappymon-whitepaper.vercel.app/"
                                         className="p-3 w-64 flex flex-row gap-x-1 justify-start items-center rounded-3xl shadow-md border border-slate-500/80 text-xl font-bold hover:text-blue-500 transition-colors duration-200"
                                     >
                                         <BookMarked size={30} /> Whitepaper
-                                    </Link>
+                                    </a>
                                 </li>
                                 <li>
                                     <Link
-                                        href="/community"
+                                        href="#"
                                         className="p-3 w-64 flex flex-row gap-x-1 justify-start items-center rounded-3xl shadow-md border border-slate-500/80 text-xl font-bold hover:text-blue-500 transition-colors duration-200"
                                     >
                                         <MessageSquareText size={30} />{" "}
@@ -105,19 +105,19 @@ const NavbarMarketplace: React.FC<NavbarProps> = ({
                 {/* Center Nav Links */}
                 <div className="hidden md:flex gap-x-8 text-black font-semibold text-lg">
                     <Link
-                        href="/marketplace"
+                        href="/Marketplace"
                         className="hover:text-blue-600 transition flex flex-row justify-center items-center gap-1"
                     >
                         <Store size={25} /> Marketplace
                     </Link>
                     <Link
-                        href="/inventory"
+                        href="/Inventory"
                         className="hover:text-blue-600 transition flex flex-row justify-center items-center gap-1"
                     >
                         <Package size={25} /> Inventory
                     </Link>
                     <Link
-                        href="/skill"
+                        href="/Skill"
                         className="hover:text-blue-600 transition flex flex-row justify-center items-center gap-1"
                     >
                         <Target size={25} /> Skill

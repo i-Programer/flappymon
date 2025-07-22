@@ -55,7 +55,7 @@ const Navbar: React.FC<NavbarProps> = ({ isConnected, address }) => {
                             <ul className="flex flex-col gap-y-2 p-4">
                                 <li>
                                     <Link
-                                        href="/marketplace"
+                                        href="/Marketplace"
                                         className="p-3 w-64 flex flex-row gap-x-1 justify-start items-center rounded-3xl shadow-md border border-slate-500/80 text-xl font-bold hover:text-blue-500 transition-colors duration-200"
                                     >
                                         <Store size={30} /> Marketplace
@@ -63,23 +63,23 @@ const Navbar: React.FC<NavbarProps> = ({ isConnected, address }) => {
                                 </li>
                                 <li>
                                     <Link
-                                        href="/inventory"
+                                        href="/Inventory"
                                         className="p-3 w-64 flex flex-row gap-x-1 justify-start items-center rounded-3xl shadow-md border border-slate-500/80 text-xl font-bold hover:text-blue-500 transition-colors duration-200"
                                     >
                                         <Package size={30} /> Inventory
                                     </Link>
                                 </li>
                                 <li>
-                                    <Link
-                                        href="/whitepaper"
+                                    <a
+                                        href="https://flappymon-whitepaper.vercel.app/"
                                         className="p-3 w-64 flex flex-row gap-x-1 justify-start items-center rounded-3xl shadow-md border border-slate-500/80 text-xl font-bold hover:text-blue-500 transition-colors duration-200"
                                     >
                                         <BookMarked size={30} /> Whitepaper
-                                    </Link>
+                                    </a>
                                 </li>
                                 <li>
                                     <Link
-                                        href="/community"
+                                        href="#"
                                         className="p-3 w-64 flex flex-row gap-x-1 justify-start items-center rounded-3xl shadow-md border border-slate-500/80 text-xl font-bold hover:text-blue-500 transition-colors duration-200"
                                     >
                                         <MessageSquareText size={30} />{" "}
@@ -97,7 +97,7 @@ const Navbar: React.FC<NavbarProps> = ({ isConnected, address }) => {
                 <div className="flex items-center">
                     {isConnected ? (
                         <Link
-                            href="/game"
+                            href="/Game"
                             className="bg-green-800 py-2 px-4 rounded-md hover:bg-green-700 transition"
                         >
                             <span className="text-white font-bold text-2xl">

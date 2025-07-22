@@ -7,13 +7,16 @@ const inter = Inter({ subsets: ["latin"] });
 
 const AppWithoutSSR = dynamic(() => import("@/App"), { ssr: false });
 
-export default function Home() {
+export default function Game() {
     return (
         <>
             <Head>
                 <title>Flappymon</title>
                 <meta name="description" content="Web3 Game" />
-                <meta name="viewport" content="width=device-width, initial-scale=1" />
+                <meta
+                    name="viewport"
+                    content="width=device-width, initial-scale=1"
+                />
             </Head>
             <main className={`${styles.main} ${inter.className}`}>
                 <AppWithoutSSR />
@@ -21,3 +24,4 @@ export default function Home() {
         </>
     );
 }
+
