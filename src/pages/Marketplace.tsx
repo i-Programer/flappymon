@@ -25,6 +25,13 @@ const Marketplace = () => {
         new Set()
     );
     const { signTypedDataAsync } = useSignTypedData();
+    const skillNames = [
+        "Dash",
+        "Disappear",
+        "Gap Manipulation",
+        "Pipe Destroyer",
+        "Floating",
+    ];
 
     useEffect(() => {
         setMounted(true);
@@ -181,6 +188,7 @@ const Marketplace = () => {
         }
     };
 
+    console.log(listings);
     return (
         <>
             <div className="bg-zinc-700">
@@ -297,13 +305,14 @@ const Marketplace = () => {
                                     >
                                         <div className="w-full h-40 bg-zinc-600 rounded mb-4 flex items-center justify-center overflow-hidden">
                                             <img
-                                                src={listing.image}
+                                                src={`/assets/skills_icon/${listing.skillType}.png`}
                                                 alt={`Skill ${listing.tokenId}`}
                                                 className="w-full h-full object-contain"
                                             />
                                         </div>
                                         <h3 className="text-lg font-bold mb-1 text-white">
-                                            Skill #{listing.tokenId}
+                                            {skillNames[listing.skillType]} #
+                                            {listing.tokenId}
                                         </h3>
                                         <p className="text-sm text-zinc-400 mb-1">
                                             Type: {listing.skillType} | Level:{" "}
