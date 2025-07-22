@@ -23,6 +23,8 @@ const BACKEND_WALLET = process.env.NEXT_PUBLIC_BACKEND_ADDRESS as `0x${string}`;
 //     transport: custom((window as any).ethereum),
 // });
 
+type Rarity = "common" | "rare" | "epic";
+
 const Skill = () => {
     const page = "Inventory";
     const [mounted, setMounted] = useState(false);
@@ -41,6 +43,11 @@ const Skill = () => {
     const [listedTokenIds, setListedTokenIds] = useState<Set<number>>(
         new Set()
     );
+    const SKILL_POOLS: Record<Rarity, number[]> = {
+        common: [0, 4], // Dash, Floating
+        rare: [1, 2], // Disappear, Gap Manipulation
+        epic: [3], // Pipe Destroyer
+    };
 
     const { signMessageAsync } = useSignMessage();
 
@@ -116,6 +123,13 @@ const Skill = () => {
         if (!addr) return "No wallet";
         return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
     };
+
+    function getRarity(skillType: number): Rarity | null {
+        for (const [rarity, types] of Object.entries(SKILL_POOLS)) {
+            if (types.includes(skillType)) return rarity as Rarity;
+        }
+        return null;
+    }
 
     async function ensureSkillApproval(): Promise<boolean> {
         if (!address) return false;
@@ -301,34 +315,48 @@ const Skill = () => {
                         {/* Buttons */}
                         <div className="flex flex-col gap-4">
                             {selectedSkills.length === 2 &&
-                            selectedSkills[0].skillType ===
-                                selectedSkills[1].skillType &&
-                            selectedSkills[0].skillLevel ===
-                                selectedSkills[1].skillLevel ? (
-                                <button
-                                    onClick={() =>
-                                        handleLevelUp([
-                                            selectedSkills[0].tokenId,
-                                            selectedSkills[1].tokenId,
-                                        ])
+                                (() => {
+                                    const [a, b] = selectedSkills;
+                                    const sameType =
+                                        a.skillType === b.skillType;
+                                    const sameLevel =
+                                        a.skillLevel === b.skillLevel;
+                                    const rarityA = getRarity(a.skillType);
+                                    const rarityB = getRarity(b.skillType);
+                                    const sameRarity = rarityA === rarityB;
+
+                                    if (sameType && sameLevel) {
+                                        return (
+                                            <button
+                                                onClick={() =>
+                                                    handleLevelUp([
+                                                        a.tokenId,
+                                                        b.tokenId,
+                                                    ])
+                                                }
+                                                className="w-full bg-blue-600 hover:bg-blue-700 py-2 rounded text-white font-semibold"
+                                            >
+                                                Level Up
+                                            </button>
+                                        );
+                                    } else if (sameRarity) {
+                                        return (
+                                            <button
+                                                onClick={() =>
+                                                    handleUnlock([
+                                                        a.tokenId,
+                                                        b.tokenId,
+                                                    ])
+                                                }
+                                                className="w-full bg-green-600 hover:bg-green-700 py-2 rounded text-white font-semibold"
+                                            >
+                                                Unlock Skill
+                                            </button>
+                                        );
                                     }
-                                    className="w-full bg-blue-600 hover:bg-blue-700 py-2 rounded text-white font-semibold"
-                                >
-                                    Level Up
-                                </button>
-                            ) : (
-                                <button
-                                    onClick={() =>
-                                        handleUnlock([
-                                            selectedSkills[0].tokenId,
-                                            selectedSkills[1].tokenId,
-                                        ])
-                                    }
-                                    className="w-full bg-green-600 hover:bg-green-700 py-2 rounded text-white font-semibold"
-                                >
-                                    Unlock Skill
-                                </button>
-                            )}
+
+                                    return null;
+                                })()}
                             <button
                                 onClick={() => setSelectedSkills([])}
                                 className="w-full bg-red-600 hover:bg-red-700 py-2 rounded text-white font-semibold"
