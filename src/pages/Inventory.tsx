@@ -58,6 +58,8 @@ const Inventory = () => {
     const [storeOpen, setStoreOpen] = useState(false);
     const { signMessageAsync } = useSignMessage();
 
+    const itemNames = ["Double Point"];
+
     useEffect(() => {
         setMounted(true);
     }, []);
@@ -412,7 +414,7 @@ const Inventory = () => {
                                     className="w-20 h-20 object-contain mb-2"
                                 />
                                 <span className="text-white font-semibold">
-                                    Item #{item.tokenId}
+                                    {itemNames[item.tokenId]}
                                 </span>
                                 <span className="text-lime-400 text-sm">
                                     Qty: {item.uses}
