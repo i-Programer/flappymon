@@ -50,3 +50,19 @@ canvas.ui-blocked {
         color: rgba(255, 255, 255, 0.3);
     }
 }
+
+
+@keyframes scrollBg {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  
+.scrolling-bg {
+    background-image: url('/assets/bg.jpg');
+    background-repeat: repeat-x;
+    background-size: cover;
+    background-position-y: -300px;
+    width: 200%;
+    height: 100%;
+    animation: scrollBg 30s linear infinite;
+}

@@ -93,11 +93,10 @@ export class SkillScene extends Phaser.Scene {
       const x = 120 + (i % 2) * 160
       const y = 120 + Math.floor(i / 2) * 160
     
-      const imageKey = `skill-${skill.tokenId}`
-      this.load.image(imageKey, skill.image || '/placeholder.png')
+      const imageKey = `skill-${skill.skillType}`
     
       this.load.once('complete', async () => {
-        const sprite = this.add.image(x, y, imageKey).setScale(0.4)
+        const sprite = this.add.image(x, y, imageKey).setScale(2)
         sprite.setInteractive({ useHandCursor: true })
     
         let clickTimer: any = null

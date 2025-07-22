@@ -3,7 +3,7 @@ import { createWalletClient, http, parseUnits } from 'viem'
 import { sepolia } from 'viem/chains'
 import { privateKeyToAccount } from 'viem/accounts'
 
-import { publicClient } from '@/lib/viemClient' // you'll define this once for reading
+import { publicClient } from '@/lib/walletClient' // you'll define this once for reading
 import flapAbi from '@/abi/FLAPTOKEN.json'
 import flappymonAbi from '@/abi/Flappymon.json'
 import skillNftAbi from '@/abi/SkillNFT.json'

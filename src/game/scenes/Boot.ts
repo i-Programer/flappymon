@@ -14,10 +14,16 @@ export class Boot extends Scene
 
         this.load.image('bg_sky', '/assets/bg.jpg');
 
+        this.load.image('skill-dash', '/assets/skills_icon/dash.png');
+        this.load.image('skill-floating', '/assets/skills_icon/floating.png');
+        this.load.image('skill-dissapear', '/assets/skills_icon/dissapear.png');
+        this.load.image('skill-gap_manipulation', '/assets/skills_icon/gap_manipulation.png');
+        this.load.image('skill-pipe_destroyer', '/assets/skills_icon/pipe_destroyer.png');
+
     }
 
     create ()
     {
-        this.scene.start('MainMenuScene');
+        this.scene.start('GameScene');
     }
 }

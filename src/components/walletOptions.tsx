@@ -1,12 +1,16 @@
 import * as React from 'react'
-import { Connector, useConnect } from 'wagmi'
+import { useConnect } from 'wagmi'
+import { Wallet } from 'lucide-react'
 
 export function WalletOptions() {
   const { connectors, connect } = useConnect()
 
   return connectors.map((connector) => (
-    <button className="text-white font-bold text-3xl rounded-2xl p-4 cursor-pointer bg-gray-950" key={connector.uid} onClick={() => connect({ connector })}>
-      {connector.name}
+    <button className="p-2 cursor-pointer rounded-md border-2 border-black" key={connector.uid} onClick={() => connect({ connector })}>
+      <div className="flex justify-center items-center gap-x-3">
+        <Wallet color="black"/>
+        <span className="text-black font-bold ">Connect {connector.name}</span>
+      </div>
     </button>
   ))
 }

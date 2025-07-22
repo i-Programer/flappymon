@@ -1,5 +1,6 @@
 // src/store/skillStore.ts
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 
 export interface SkillNFT {
   tokenId: number
@@ -17,18 +18,38 @@ interface SkillStore {
   removeSkill: (tokenId: number) => void
 }
 
-export const useSkillStore = create<SkillStore>((set) => ({
-  skills: [],
-  selected: undefined,
+// export const useSkillStore = create<SkillStore>((set) => ({
+//   skills: [],
+//   selected: undefined,
 
-  setSkills: (skills) => set({ skills }),
-  setSelected: (skill) => set({ selected: skill }),
+//   setSkills: (skills) => set({ skills }),
+//   setSelected: (skill) => set({ selected: skill }),
 
-  addSkill: (skill) =>
-    set((state) => ({ skills: [...state.skills, skill] })),
+//   addSkill: (skill) =>
+//     set((state) => ({ skills: [...state.skills, skill] })),
 
-  removeSkill: (tokenId) =>
-    set((state) => ({
-      skills: state.skills.filter((s) => s.tokenId !== tokenId),
-    })),
-}))
+//   removeSkill: (tokenId) =>
+//     set((state) => ({
+//       skills: state.skills.filter((s) => s.tokenId !== tokenId),
+//     })),
+// }))
+
+export const useSkillStore = create<SkillStore>()(
+  persist(
+    (set) => ({
+      skills: [],
+      selected: undefined,
+      setSkills: (skills) => set({ skills }),
+      setSelected: (skill) => set({ selected: skill }),
+      addSkill: (skill) =>
+        set((state) => ({ skills: [...state.skills, skill] })),
+      removeSkill: (tokenId) =>
+        set((state) => ({
+          skills: state.skills.filter((s) => s.tokenId !== tokenId),
+        })),
+    }),
+    {
+      name: 'skill-storage', // key in localStorage
+    }
+  )
+)

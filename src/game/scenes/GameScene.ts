@@ -69,7 +69,10 @@ export class GameScene extends Phaser.Scene {
   create() {
     const address = useWalletStore.getState().address
 
-    const equipped = useSkillStore.getState().selected
+    const skill = useSkillStore.getState().selected
+    const flappymon = useFlappymonStore.getState().selected
+    console.log(skill)
+    console.log(flappymon)
 
     this.floatingTexts = this.add.group()
 
@@ -195,7 +198,7 @@ export class GameScene extends Phaser.Scene {
     }).setOrigin(0.5).setInteractive()
 
     mainMenuButton.on('pointerdown', () => {
-      this.scene.start('MainMenuScene')
+      window.location.href = '/'
     })
 
     this.gameOverBtn = this.add.container(0, 0, [restartButton, mainMenuButton])
@@ -332,11 +335,19 @@ export class GameScene extends Phaser.Scene {
 
     if (this.pipes.getChildren().length >= 20) return
 
-    const topPipe = this.pipes.create(this.scale.width, newGapY, 'pipe') as Phaser.Physics.Arcade.Sprite
-    topPipe.setOrigin(0, 1).setFlipY(true).setDisplaySize(pipeWidth, newGapY).setVelocityX(PIPE_SPEED)
+    const pipeOffset = 20 // amount of overhang you want
 
-    const bottomPipe = this.pipes.create(this.scale.width, newGapY + this.pipeGap, 'pipe') as Phaser.Physics.Arcade.Sprite
-    bottomPipe.setOrigin(0, 0).setDisplaySize(pipeWidth, screenHeight - newGapY - this.pipeGap).setVelocityX(PIPE_SPEED)
+    const topPipe = this.pipes.create(this.scale.width, newGapY + pipeOffset, 'pipe')
+      .setOrigin(0, 1)
+      .setFlipY(true)
+      .setDisplaySize(pipeWidth, newGapY + pipeOffset)
+      .setVelocityX(PIPE_SPEED)
+
+    const bottomPipe = this.pipes.create(this.scale.width, newGapY + this.pipeGap, 'pipe')
+      .setOrigin(0, 0)
+      .setDisplaySize(pipeWidth, screenHeight - newGapY - this.pipeGap + pipeOffset)
+      .setVelocityX(PIPE_SPEED)
+
 
     const pair = { top: topPipe, bottom: bottomPipe }
     Object.assign(topPipe, { pair })
@@ -429,7 +440,7 @@ export class GameScene extends Phaser.Scene {
       
         this.showFloatingText('🫥 Disappear!', 0xffffff)
       
-        this.time.delayedCall(90500 + level * 100, () => {
+        this.time.delayedCall(3500 + level * 100, () => {
           body.checkCollision.none = false
           this.player.setAlpha(1)
           if (this.pipeCollider) this.pipeCollider.active = true

@@ -13,7 +13,7 @@ export const createPhaserGame = (parentId: string) => {
     width: window.innerWidth,
     height: window.innerHeight,
     backgroundColor: '#87CEEB', // Light sky blue (customize this)
-    scene: [Boot, MainMenuScene, GameScene, CharacterScene, SkillScene, MarketplaceScene],
+    scene: [Boot, GameScene],
     parent: parentId,
     physics: {
         default: 'arcade',
