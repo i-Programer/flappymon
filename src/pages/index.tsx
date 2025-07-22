@@ -20,6 +20,8 @@ export default function Home() {
     const { address, isConnected, chain } = useAccount();
     const { signMessageAsync } = useSignMessage();
     const { signTypedDataAsync } = useSignTypedData();
+    const [faucetLoading, setFaucetLoading] = useState(false);
+    const [faucetClaimed, setFaucetClaimed] = useState(false);
 
     const [equippedSkill, setEquippedSkill] = useState<SkillNFT | null>(null);
     const [equippedFlappymon, setEquippedFlappymon] =
@@ -292,10 +294,48 @@ export default function Home() {
         });
     }
 
+    async function claimFaucet() {
+        if (!address || !signMessageAsync) return;
+
+        try {
+            setFaucetLoading(true);
+            const timestamp = Date.now();
+            const message = `Claim faucet at ${timestamp}`;
+            const signature = await signMessageAsync({ message });
+
+            const res = await fetch("/api/faucet", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ address, signature, timestamp }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                alert("Failed to claim: " + data.error);
+            } else {
+                alert("Claim Successfuly");
+                setFaucetClaimed(true);
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Failed to claim.");
+        } finally {
+            setFaucetLoading(false);
+        }
+    }
+
     return (
         <>
             <Navbar isConnected={isConnected} address={address} />
             {/* Fullscreen Loading Overlay */}
+            {address && !faucetClaimed && (
+                <div className="fixed top-30 right-4 z-50 bg-sky-900 text-white px-4 py-2 rounded shadow">
+                    <button onClick={claimFaucet} disabled={faucetLoading}>
+                        {faucetLoading ? "Claiming..." : "Claim 500 $FLAP"}
+                    </button>
+                </div>
+            )}
             {loading && (
                 <div className="fixed inset-0 bg-black bg-opacity-80 z-50 flex flex-col items-center justify-center text-white text-2xl">
                     <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500 border-solid mb-6"></div>
