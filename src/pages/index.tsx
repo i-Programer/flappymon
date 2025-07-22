@@ -25,6 +25,9 @@ export default function Home() {
     const [equippedFlappymon, setEquippedFlappymon] =
         useState<FlappymonNFT | null>(null);
 
+    const [loading, setLoading] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
+
     useEffect(() => {
         setMounted(true);
     }, []);
@@ -59,47 +62,38 @@ export default function Home() {
     async function rollGacha() {
         if (!address || !signMessageAsync || !signTypedDataAsync) return;
 
-        const balance = (await publicClient.readContract({
-            address: flapTokenAddress,
-            abi: flapTokenAbi.abi,
-            functionName: "balanceOf",
-            args: [address],
-        })) as bigint;
-
-        if (balance < FLAP_COST) {
-            alert(
-                "Not enough $FLAP to roll gacha! You need at least 50 $FLAP."
-            );
-            return;
-        }
-
-        const timestamp = Date.now();
-        const message = `Roll gacha at ${timestamp}`;
-
-        let signature: string;
+        setLoading(true);
+        setShowSuccess(false);
         try {
-            signature = await signMessageAsync({ message });
-        } catch (err: any) {
-            if (err.name === "UserRejectedRequestError") {
-                alert("You rejected the signature request.");
+            const balance = (await publicClient.readContract({
+                address: flapTokenAddress,
+                abi: flapTokenAbi.abi,
+                functionName: "balanceOf",
+                args: [address],
+            })) as bigint;
+
+            if (balance < FLAP_COST) {
+                alert(
+                    "Not enough $FLAP to roll gacha! You need at least 50 $FLAP."
+                );
                 return;
             }
-            alert("Failed to sign message.");
-            return;
-        }
 
-        const nonce = (await publicClient.readContract({
-            address: flapTokenAddress,
-            abi: flapTokenAbi.abi,
-            functionName: "nonces",
-            args: [address],
-        })) as bigint;
+            const timestamp = Date.now();
+            const message = `Roll gacha at ${timestamp}`;
 
-        const deadline = Math.floor(Date.now() / 1000) + 3600;
+            const signature = await signMessageAsync({ message });
 
-        let signatureTyped: string;
-        try {
-            signatureTyped = await signTypedDataAsync({
+            const nonce = (await publicClient.readContract({
+                address: flapTokenAddress,
+                abi: flapTokenAbi.abi,
+                functionName: "nonces",
+                args: [address],
+            })) as bigint;
+
+            const deadline = Math.floor(Date.now() / 1000) + 3600;
+
+            const signatureTyped = await signTypedDataAsync({
                 domain: {
                     name: "FLAPTOKEN",
                     version: "1",
@@ -124,152 +118,164 @@ export default function Home() {
                 },
                 primaryType: "Permit",
             });
-        } catch (err: any) {
-            if (err.name === "UserRejectedRequestError") {
-                alert("You rejected the permit signature.");
+
+            const res = await fetch("/api/gacha/roll", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    address,
+                    signature,
+                    timestamp,
+                    permit: {
+                        owner: address,
+                        spender: BACKEND_WALLET,
+                        value: FLAP_COST.toString(),
+                        deadline,
+                        signature: signatureTyped,
+                    },
+                }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                alert("Something went wrong: " + data.error);
                 return;
             }
-            alert("Failed to sign permit.");
-            return;
+
+            const successEvent = new CustomEvent("gacha:result", {
+                detail: data,
+            });
+            window.dispatchEvent(successEvent);
+            setShowSuccess(true); // ✅ Show success modal
+        } catch (err) {
+            console.error("Gacha roll failed:", err);
+            alert("Something went wrong during gacha roll.");
+        } finally {
+            setLoading(false);
         }
-
-        const res = await fetch("/api/gacha/roll", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                address,
-                signature,
-                timestamp,
-                permit: {
-                    owner: address,
-                    spender: BACKEND_WALLET,
-                    value: FLAP_COST.toString(),
-                    deadline,
-                    signature: signatureTyped,
-                },
-            }),
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-            alert("Something went wrong: " + data.error);
-            return;
-        }
-
-        const successEvent = new CustomEvent("gacha:result", { detail: data });
-        window.dispatchEvent(successEvent);
     }
 
     async function rollSkillGacha() {
         if (!address || !signMessageAsync || !signTypedDataAsync) return;
 
-        const balance = (await publicClient.readContract({
-            address: flapTokenAddress,
-            abi: flapTokenAbi.abi,
-            functionName: "balanceOf",
-            args: [address],
-        })) as bigint;
+        setLoading(true);
+        setShowSuccess(false);
 
-        const cost = parseUnits("80", 18);
-        if (balance < cost) {
-            alert(
-                "Not enough $FLAP! You need at least 80 $FLAP for skill gacha."
-            );
-            return;
-        }
-
-        const timestamp = Date.now();
-        const message = `Roll skill gacha at ${timestamp}`;
-
-        let signature: string;
         try {
-            signature = await signMessageAsync({ message });
-        } catch (err: any) {
-            if (err.name === "UserRejectedRequestError") {
-                alert("You rejected the signature request.");
+            const balance = (await publicClient.readContract({
+                address: flapTokenAddress,
+                abi: flapTokenAbi.abi,
+                functionName: "balanceOf",
+                args: [address],
+            })) as bigint;
+
+            const cost = parseUnits("80", 18);
+            if (balance < cost) {
+                alert(
+                    "Not enough $FLAP! You need at least 80 $FLAP for skill gacha."
+                );
                 return;
             }
-            alert("Failed to sign message.");
-            return;
-        }
 
-        const nonce = (await publicClient.readContract({
-            address: flapTokenAddress,
-            abi: flapTokenAbi.abi,
-            functionName: "nonces",
-            args: [address],
-        })) as bigint;
+            const timestamp = Date.now();
+            const message = `Roll skill gacha at ${timestamp}`;
 
-        const deadline = Math.floor(Date.now() / 1000) + 3600;
-
-        let signatureTyped: string;
-        try {
-            signatureTyped = await signTypedDataAsync({
-                domain: {
-                    name: "FLAPTOKEN",
-                    version: "1",
-                    chainId: chain?.id ?? 11155111,
-                    verifyingContract: flapTokenAddress,
-                },
-                types: {
-                    Permit: [
-                        { name: "owner", type: "address" },
-                        { name: "spender", type: "address" },
-                        { name: "value", type: "uint256" },
-                        { name: "nonce", type: "uint256" },
-                        { name: "deadline", type: "uint256" },
-                    ],
-                },
-                message: {
-                    owner: address,
-                    spender: BACKEND_WALLET,
-                    value: cost,
-                    nonce: BigInt(nonce),
-                    deadline: BigInt(deadline),
-                },
-                primaryType: "Permit",
-            });
-        } catch (err: any) {
-            if (err.name === "UserRejectedRequestError") {
-                alert("You rejected the permit signature.");
+            let signature: string;
+            try {
+                signature = await signMessageAsync({ message });
+            } catch (err: any) {
+                if (err.name === "UserRejectedRequestError") {
+                    alert("You rejected the signature request.");
+                    return;
+                }
+                alert("Failed to sign message.");
                 return;
             }
-            alert("Failed to sign permit.");
-            return;
-        }
 
-        const res = await fetch("/api/skill_gacha/roll", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                address,
-                signature,
-                timestamp,
-                permit: {
-                    owner: address,
-                    spender: BACKEND_WALLET,
-                    value: cost.toString(),
-                    deadline,
-                    signature: signatureTyped,
-                },
-            }),
-        });
+            const nonce = (await publicClient.readContract({
+                address: flapTokenAddress,
+                abi: flapTokenAbi.abi,
+                functionName: "nonces",
+                args: [address],
+            })) as bigint;
 
-        const data = await res.json();
+            const deadline = Math.floor(Date.now() / 1000) + 3600;
 
-        if (!res.ok) {
-            const failEvent = new CustomEvent("skillgacha:fail", {
-                detail: data?.error || "Unknown error",
+            let signatureTyped: string;
+            try {
+                signatureTyped = await signTypedDataAsync({
+                    domain: {
+                        name: "FLAPTOKEN",
+                        version: "1",
+                        chainId: chain?.id ?? 11155111,
+                        verifyingContract: flapTokenAddress,
+                    },
+                    types: {
+                        Permit: [
+                            { name: "owner", type: "address" },
+                            { name: "spender", type: "address" },
+                            { name: "value", type: "uint256" },
+                            { name: "nonce", type: "uint256" },
+                            { name: "deadline", type: "uint256" },
+                        ],
+                    },
+                    message: {
+                        owner: address,
+                        spender: BACKEND_WALLET,
+                        value: cost,
+                        nonce: BigInt(nonce),
+                        deadline: BigInt(deadline),
+                    },
+                    primaryType: "Permit",
+                });
+            } catch (err: any) {
+                if (err.name === "UserRejectedRequestError") {
+                    alert("You rejected the permit signature.");
+                    return;
+                }
+                alert("Failed to sign permit.");
+                return;
+            }
+
+            const res = await fetch("/api/skill_gacha/roll", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    address,
+                    signature,
+                    timestamp,
+                    permit: {
+                        owner: address,
+                        spender: BACKEND_WALLET,
+                        value: cost.toString(),
+                        deadline,
+                        signature: signatureTyped,
+                    },
+                }),
             });
-            window.dispatchEvent(failEvent);
-            return;
-        }
 
-        const successEvent = new CustomEvent("skillgacha:result", {
-            detail: data,
-        });
-        window.dispatchEvent(successEvent);
+            const data = await res.json();
+
+            if (!res.ok) {
+                const failEvent = new CustomEvent("skillgacha:fail", {
+                    detail: data?.error || "Unknown error",
+                });
+                window.dispatchEvent(failEvent);
+                return;
+            }
+
+            const successEvent = new CustomEvent("skillgacha:result", {
+                detail: data,
+            });
+            window.dispatchEvent(successEvent);
+            setShowSuccess(true); // ✅ Show success modal
+        } catch (err) {
+            console.error("Gacha roll failed:", err);
+            alert("Something went wrong during gacha roll.");
+        } finally {
+            setLoading(false);
+        }
     }
 
     function handleRollGacha() {
@@ -289,6 +295,30 @@ export default function Home() {
     return (
         <>
             <Navbar isConnected={isConnected} address={address} />
+            {/* Fullscreen Loading Overlay */}
+            {loading && (
+                <div className="fixed inset-0 bg-black bg-opacity-80 z-50 flex flex-col items-center justify-center text-white text-2xl">
+                    <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500 border-solid mb-6"></div>
+                    Rolling the gacha
+                </div>
+            )}
+
+            {/* Fullscreen Success Modal */}
+            {showSuccess && !loading && (
+                <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex flex-col items-center justify-center text-white text-center px-6">
+                    <div className="text-5xl mb-4">🎉</div>
+                    <h2 className="text-3xl font-bold mb-2">Gacha Success!</h2>
+                    <p className="text-xl mb-6">
+                        Check your inventory to see what you got.
+                    </p>
+                    <button
+                        onClick={() => setShowSuccess(false)}
+                        className="mt-4 px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold"
+                    >
+                        Close
+                    </button>
+                </div>
+            )}
             <div className="w-full h-full overflow-hidden relative">
                 {/* Header Section */}
                 <div className="w-full h-[45rem] overflow-hidden relative">
