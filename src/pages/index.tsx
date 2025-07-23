@@ -410,20 +410,23 @@ export default function Home() {
                 >
                     <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
                         {/* LEFT AREA */}
-                        <div className="flex flex-col gap-8">
-                            <h2 className="text-4xl font-bold text-black">
-                                Welcome to the Flappymon Universe
-                            </h2>
-                            <div className="flex flex-col gap-4">
-                                <div className="text-sm text-black">
-                                    Lorem ipsum dolor sit amet, consectetur
-                                    adipiscing elit. Sed do eiusmod tempor
-                                    incididunt ut labore et dolore magna aliqua.
+                        <div className="flex flex-col justify-between gap-8 h-[100%]">
+                            <div className="flex flex-col">
+                                <h2 className="text-4xl font-bold text-black">
+                                    Welcome to the Flappymon Universe
+                                </h2>
+                                <div className="flex flex-col gap-4">
+                                    <div className="text-sm text-black">
+                                        Lorem ipsum dolor sit amet, consectetur
+                                        adipiscing elit. Sed do eiusmod tempor
+                                        incididunt ut labore et dolore magna
+                                        aliqua.
+                                    </div>
                                 </div>
                             </div>
 
                             {/* Replaced Swiper with Video */}
-                            <div className="relative w-full h-[100%] bg-black rounded-lg overflow-hidden">
+                            <div className="relative w-full bg-black rounded-lg overflow-hidden">
                                 <video
                                     className="w-full h-full object-cover"
                                     controls
@@ -467,7 +470,7 @@ export default function Home() {
                             </div>
 
                             {/* NEWS LIST */}
-                            <div className="p-6 rounded-lg">
+                            <div className="px-6 pt-6 rounded-lg">
                                 <div className="flex justify-between items-center mb-4">
                                     <h2 className="text-lg font-bold text-black">
                                         NEWS
