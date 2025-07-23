@@ -35,8 +35,8 @@ const Navbar: React.FC<NavbarProps> = ({ isConnected, address }) => {
     }, []);
 
     return (
-        <div className="w-full bg-white p-3 relative">
-            <div className="flex items-center justify-between px-8">
+        <div className="w-full bg-white h-[64px] pl-3 relative">
+            <div className="flex items-center justify-between px-8 relative">
                 {/* Left side: logo + dropdown */}
                 <div className="flex items-center gap-x-4 text-black relative">
                     <button
@@ -98,10 +98,15 @@ const Navbar: React.FC<NavbarProps> = ({ isConnected, address }) => {
                     {isConnected ? (
                         <Link
                             href="/Game"
-                            className="bg-green-800 py-2 px-4 rounded-md hover:bg-green-700 transition"
+                            className="absolute right-0 top-0 h-[64px] px-10 py-2 bg-gradient-to-l from-red-500 to-yellow-500 transition flex items-center justify-center"
                         >
-                            <span className="text-white font-bold text-2xl">
-                                Play
+                            <span className="text-white font-bold text-3xl flex flex-row justify-center items-center gap-1">
+                                <img
+                                    src="/assets/flappybird_gamestart.gif"
+                                    alt="Flappy Bird Flying"
+                                    className="w-16 h-16 object-contain"
+                                />
+                                GAME START
                             </span>
                         </Link>
                     ) : (

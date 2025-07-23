@@ -69,10 +69,10 @@ export class GameScene extends Phaser.Scene {
   create() {
     const address = useWalletStore.getState().address
 
-    const skill = useSkillStore.getState().selected
-    const flappymon = useFlappymonStore.getState().selected
-    console.log(skill)
-    console.log(flappymon)
+    // const skill = useSkillStore.getState().selected
+    // const flappymon = useFlappymonStore.getState().selected
+    // console.log(skill)
+    // console.log(flappymon)
 
     this.floatingTexts = this.add.group()
 
@@ -127,23 +127,24 @@ export class GameScene extends Phaser.Scene {
   }
 
   private createPlayer() {
-    const selected = useFlappymonStore.getState().selected
-    let color = 0xffffff
-    if (selected?.rarity !== undefined) {
-      color = [0x4caf50, 0x2196f3, 0x9c27b0, 0xffc107][selected.rarity]
-    }
-
-    this.textureKey = `player-${Date.now()}`
-    const graphics = this.add.graphics()
-    graphics.fillStyle(color, 1)
-    graphics.fillCircle(10, 10, 10)
-    graphics.generateTexture(this.textureKey, 20, 20)
-    graphics.destroy()
-
-    this.player = this.physics.add.sprite(100, this.scale.height / 2, this.textureKey)
-    this.player.setCollideWorldBounds(true)
-    this.player.setGravityY(500)
+    const selected = useFlappymonStore.getState().selected;
+  
+    // Fallback to 'common' if rarity is undefined
+    const rarityKey = ['common', 'rare', 'epic', 'legendary'][selected?.rarity ?? 0];
+  
+    this.player = this.physics.add.sprite(
+      100,
+      this.scale.height / 2,
+      rarityKey // Use the preloaded image key
+    );
+  
+    this.player.setCollideWorldBounds(true);
+    this.player.setGravityY(500);
+  
+    // Optional: scale image if needed
+    this.player.setScale(0.5); // adjust as needed depending on your sprite size
   }
+  
 
   private createScoreText() {
     this.scoreText = this.add.text(20, 20, 'Score: 0', {
@@ -488,11 +489,11 @@ export class GameScene extends Phaser.Scene {
   }
 
   update() {
-    this.debugText.setText([
-      `FPS: ${this.game.loop.actualFps.toFixed(1)}`,
-      `Pipes: ${this.pipes.getChildren().length}`,
-      `Objects: ${this.children.list.length}`,
-    ])
+    // this.debugText.setText([
+    //   `FPS: ${this.game.loop.actualFps.toFixed(1)}`,
+    //   `Pipes: ${this.pipes.getChildren().length}`,
+    //   `Objects: ${this.children.list.length}`,
+    // ])
 
     const now = this.time.now
     const interval = this.isPointRain ? 800 : PIPE_INTERVAL

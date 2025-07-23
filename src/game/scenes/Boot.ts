@@ -20,6 +20,11 @@ export class Boot extends Scene
         this.load.image('skill-gap_manipulation', '/assets/skills_icon/gap_manipulation.png');
         this.load.image('skill-pipe_destroyer', '/assets/skills_icon/pipe_destroyer.png');
 
+        this.load.image('common', '/assets/flappymons_sprite/0.png');
+        this.load.image('rare', '/assets/flappymons_sprite/1.png');
+        this.load.image('epic', '/assets/flappymons_sprite/2.png');
+        this.load.image('legendary', '/assets/flappymons_sprite/3.png');
+
     }
 
     create ()

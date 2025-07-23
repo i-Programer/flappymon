@@ -3,12 +3,21 @@ import Navbar from "@/components/website/Navbar";
 import { useEffect, useState } from "react";
 import { readContract } from "@wagmi/core";
 import { useAccount, useSignMessage, useSignTypedData } from "wagmi";
-import { Dice5, Link, MoveUpRight, Target } from "lucide-react";
+import {
+    Dice5,
+    Linkedin,
+    Mail,
+    MoveUpRight,
+    Target,
+    Youtube,
+} from "lucide-react";
 import { FlappymonNFT, SkillNFT } from "@/types/nft";
 import { flapTokenAbi, flapTokenAddress } from "@/lib/contracts";
 import { parseUnits } from "viem";
 import { publicClient } from "@/lib/viemClient";
 import Image from "next/image";
+import Link from "next/link";
+import { WalletOptions } from "@/components/walletOptions";
 
 const BACKEND_WALLET = process.env.NEXT_PUBLIC_BACKEND_ADDRESS as `0x${string}`;
 const FLAP_COST = parseUnits("50", 18);
@@ -329,13 +338,6 @@ export default function Home() {
         <>
             <Navbar isConnected={isConnected} address={address} />
             {/* Fullscreen Loading Overlay */}
-            {address && !faucetClaimed && (
-                <div className="fixed top-30 right-4 z-50 bg-sky-900 text-white px-4 py-2 rounded shadow">
-                    <button onClick={claimFaucet} disabled={faucetLoading}>
-                        {faucetLoading ? "Claiming..." : "Claim 500 $FLAP"}
-                    </button>
-                </div>
-            )}
             {loading && (
                 <div className="fixed inset-0 bg-black bg-opacity-80 z-50 flex flex-col items-center justify-center text-white text-2xl">
                     <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500 border-solid mb-6"></div>
@@ -361,143 +363,130 @@ export default function Home() {
             )}
             <div className="w-full h-full overflow-hidden relative">
                 {/* Header Section */}
-                <div className="w-full h-[45rem] overflow-hidden relative">
-                    <div
-                        className="w-full h-full flex justify-center items-center relative bg-cover bg-center bg-no-repeat"
-                        style={{
-                            backgroundImage: "url('/assets/bg_2.png')",
-                            backgroundAttachment: "fixed",
-                        }}
-                    >
-                        {/* <div className="absolute inset-0 scrolling-bg z-[10]" /> */}
-
-                        <div className="w-full h-full grid grid-cols-2 z-[11]">
-                            {/* Left Side */}
-                            <div className="flex flex-col items-center justify-start gap-3 p-5">
-                                <span className="text-5xl font-bold uppercase">
-                                    Flappymon
-                                </span>
-                                <div className="w-full flex-1">
-                                    <video
-                                        controls
-                                        className="w-full h-full object-cover rounded-2xl shadow-xl"
-                                        poster="/assets/poster_video_demo.png"
-                                    >
-                                        <source
-                                            src="/assets/video/flappymon_web3_demo.mp4"
-                                            type="video/mp4"
-                                        />
-                                    </video>
+                {address && !faucetClaimed && (
+                    <div className="absolute top-4 right-4 z-50 bg-sky-900 text-white px-4 py-2 rounded shadow">
+                        <button onClick={claimFaucet} disabled={faucetLoading}>
+                            {faucetLoading ? "Claiming..." : "Claim 500 $FLAP"}
+                        </button>
+                    </div>
+                )}
+                <section
+                    id="main-section-home"
+                    className="w-full py-12 px-4 text-white bg-cover bg-center bg-no-repeat"
+                    style={{
+                        backgroundImage: "url('/assets/bg_2.png')",
+                        backgroundAttachment: "fixed",
+                    }}
+                >
+                    <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
+                        {/* LEFT AREA */}
+                        <div className="flex flex-col gap-8">
+                            <h2 className="text-4xl font-bold text-black">
+                                Welcome to the Flappymon Universe
+                            </h2>
+                            <div className="flex flex-col gap-4">
+                                <div className="text-sm text-black">
+                                    Lorem ipsum dolor sit amet, consectetur
+                                    adipiscing elit. Sed do eiusmod tempor
+                                    incididunt ut labore et dolore magna aliqua.
                                 </div>
                             </div>
 
-                            {/* Right Side */}
-                            <div className="flex flex-col items-center justify-end gap-6 relative py-4">
-                                {/* Flappymon standing on the pipe */}
-                                {isConnected ? (
-                                    <>
-                                        <div className="relative flex flex-col items-center justify-centers w-full gap-y-3">
-                                            <div className="flex gap-4 mt-4">
-                                                <button
-                                                    onClick={handleRollGacha}
-                                                    className="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-4 py-2 rounded-lg transition flex flex-row justify-start items-center gap-2"
-                                                >
-                                                    <Dice5
-                                                        size={24}
-                                                        color="white"
-                                                    />
-                                                    <span>Gacha Flappymon</span>
-                                                </button>
-                                                <button
-                                                    onClick={
-                                                        handleRollSkillGacha
-                                                    }
-                                                    className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg transition flex flex-row justify-start items-center gap-2"
-                                                >
-                                                    <Target
-                                                        size={24}
-                                                        color="white"
-                                                    />
-                                                    <span>Gacha Skills</span>
-                                                </button>
-                                            </div>
+                            {/* Replaced Swiper with Video */}
+                            <div className="relative w-full h-[100%] bg-black rounded-lg overflow-hidden">
+                                <video
+                                    className="w-full h-full object-cover"
+                                    controls
+                                    muted
+                                    playsInline
+                                    src="/assets/video/flappymon_web3_demo.mp4"
+                                >
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
+                        </div>
 
-                                            <div className="grid grid-cols-3 w-[70%] rounded-md p-3 font-bold text-white text-xl uppercase bg-slate-400/50">
-                                                <span className="text-xl font-bold text-black">
-                                                    Flappymon
-                                                </span>{" "}
-                                                <span className="text-xl font-bold text-black">
-                                                    :
-                                                </span>{" "}
-                                                <span className="text-lg text-black">
-                                                    {equippedFlappymon?.name ||
-                                                        "Gacha First in Inventory"}
-                                                </span>
-                                            </div>
-                                            <div className="grid grid-cols-3 w-[70%] rounded-md p-3 font-bold text-white text-xl uppercase bg-slate-400/50">
-                                                <span className="text-xl font-bold text-black">
-                                                    Equipped Skill
-                                                </span>{" "}
-                                                <span className="text-xl font-bold text-black">
-                                                    :
-                                                </span>{" "}
-                                                <span className="text-lg text-black">
-                                                    {equippedSkill?.name ||
-                                                        "Gacha First in Inventory"}
-                                                </span>
-                                            </div>
-                                            {/* <div className="grid grid-cols-3 w-[70%] rounded-md p-3 font-bold text-white text-xl uppercase bg-slate-400/50">
-                                                <span className="text-xl font-bold text-black">
-                                                    Available Item
-                                                </span>{" "}
-                                                <span className="text-xl font-bold text-black">
-                                                    :
-                                                </span>{" "}
-                                                <span className="text-lg text-black">
-                                                    {}
-                                                </span>
-                                            </div> */}
-                                        </div>
-                                    </>
-                                ) : (
+                        {/* RIGHT AREA */}
+                        <div className="flex flex-col gap-6">
+                            <div className=" p-6 rounded-lg flex flex-col items-center text-center gap-4">
+                                {!isConnected && (
                                     <>
-                                        <div className="relative flex flex-col items-center justify-centers w-full gap-y-3 px-3">
-                                            <div className="w-[100%] h-[100%] rounded-md p-3 py-20 font-bold text-white text-xl uppercase bg-slate-400/50 text-center">
-                                                <span>
-                                                    Connect Your Wallet First
-                                                </span>
-                                            </div>
-                                        </div>
+                                        <span className="text-sm text-black">
+                                            Connect your wallet to customize
+                                            your character!
+                                        </span>
+                                        <WalletOptions />
                                     </>
                                 )}
-
-                                <div className="relative flex items-end justify-center h-[70%] w-full">
-                                    <img
-                                        src="/assets/pipe.png"
-                                        alt="pipe"
-                                        className="absolute bottom-0 z-[10] h-[70%]"
-                                    />
+                                <div>
                                     <img
                                         src={`/assets/flappymons_sprite/${
                                             equippedFlappymon?.rarity ?? 0
                                         }.png`}
-                                        alt="flappymon"
-                                        className="relative z-[20] mb-[calc(40%)] w-[20%]"
+                                        alt="avatar"
+                                        className="w-full h-full object-cover"
                                     />
                                 </div>
+                                {/* <div className="w-20">
+                                    <img
+                                        src="/images/main/section_a/floor.png"
+                                        alt="floor icon"
+                                        className="w-full"
+                                    />
+                                </div> */}
+                            </div>
+
+                            {/* NEWS LIST */}
+                            <div className="p-6 rounded-lg">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h2 className="text-lg font-bold text-black">
+                                        NEWS
+                                    </h2>
+                                </div>
+                                <ul className="flex flex-col gap-4 text-sm">
+                                    {[
+                                        {
+                                            title: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse varius.",
+                                            date: "2025.06.25",
+                                        },
+                                        {
+                                            title: "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium.",
+                                            date: "2025.07.23",
+                                        },
+                                        {
+                                            title: "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis.",
+                                            date: "2025.07.17",
+                                        },
+                                    ].map((news, idx) => (
+                                        <li
+                                            key={idx}
+                                            className="border border-gray-700 bg-gray-700 rounded-xl p-4 hover:border-blue-400 transition-all"
+                                        >
+                                            <a className="flex flex-col hover:text-blue-400">
+                                                <span className="font-medium">
+                                                    {news.title}
+                                                </span>
+                                                <time className="text-gray-400 text-xs mt-1">
+                                                    {news.date}
+                                                </time>
+                                            </a>
+                                        </li>
+                                    ))}
+                                </ul>
                             </div>
                         </div>
                     </div>
-                </div>
+                </section>
 
                 {/* Whitepaper Section */}
                 <section
-                    className="w-full px-6 md:px-20 py-48 bg-white dark:bg-neutral-900 text-center bg-cover bg-center bg-no-repeat"
+                    className="w-full px-6 md:px-20 py-10 bg-white dark:bg-neutral-900 text-center bg-cover bg-center bg-no-repeat"
                     style={{
-                        backgroundImage: "url('/assets/bg.png')",
+                        backgroundImage: "url('/assets/bg_2.png')",
+                        backgroundAttachment: "fixed",
                     }}
                 >
-                    <div className="max-w-4xl mx-auto">
+                    <div className="max-w-5xl mx-auto rounded-xl bg-white/80 dark:bg-white/90 shadow-xl p-10 backdrop-blur-md">
                         <h2 className="text-4xl md:text-5xl font-extrabold mb-6 text-black">
                             What is Flappymon?
                         </h2>
@@ -506,7 +495,7 @@ export default function Home() {
                             battler where gameplay meets NFTs. You collect,
                             trade, and level up your <em>Flappymons</em>, equip
                             them with powerful skills, and dominate the arena —
-                            all while fully owning your in-game assets. Its
+                            all while fully owning your in-game assets. It’s
                             fast-paced, skill-based, and economically driven
                             through our native token <code>$FLAP</code>.
                         </p>
@@ -521,42 +510,124 @@ export default function Home() {
                     </div>
                 </section>
 
-                {/* Marketplace Section */}
+                {/* Featured App */}
                 <section
-                    className="w-full px-6 md:px-20 py-36 bg-gradient-to-br from-yellow-100 to-yellow-300 dark:from-yellow-400 dark:to-yellow-600 text-center bg-cover bg-center bg-no-repeat"
+                    className="w-full px-6 md:px-26 py-10 bg-gradient-to-br from-yellow-100 to-yellow-300 dark:from-yellow-400 dark:to-yellow-600 text-center bg-cover bg-center bg-no-repeat"
                     style={{
                         backgroundImage: "url('/assets/bg_2.png')",
                         backgroundAttachment: "fixed",
                     }}
                 >
-                    <div className="max-w-5xl mx-auto flex flex-col items-center justify-center gap-6">
-                        <h2 className="text-4xl md:text-5xl font-extrabold text-neutral-900 dark:text-neutral-900">
-                            Visit the Skill Marketplace
-                        </h2>
-                        <p className="text-lg md:text-xl text-neutral-700 dark:text-neutral-800 max-w-2xl">
-                            Trade, buy, and sell Skill NFTs to power up your
-                            Flappymon team. Each skill is unique — boost your
-                            stats, unlock special moves, and gain the edge in
-                            battle.
-                        </p>
-                        <Link
-                            href="/marketplace"
-                            className="inline-block bg-black hover:bg-neutral-800 text-white font-semibold px-8 py-4 rounded-2xl shadow-lg transition duration-200"
-                        >
-                            🛒 Go to Marketplace
-                        </Link>
+                    <div className="mx-auto bg-white rounded-lg shadow-lg p-10 px-9 flex flex-col md:flex-row items-center justify-between gap-8 text-left">
+                        {/* Left Side */}
+                        <div className="flex-1 space-y-6">
+                            <h2 className="text-xl font-extrabold text-neutral-900">
+                                Featured App
+                            </h2>
+                            <h2 className="text-4xl md:text-5xl font-extrabold text-neutral-900">
+                                Flappymon
+                            </h2>
+                            <p className="text-lg md:text-xl text-neutral-700">
+                                Lorem ipsum dolor sit amet, consectetur
+                                adipiscing elit. Sed do eiusmod tempor
+                                incididunt ut labore et dolore magna aliqua. Ut
+                                enim ad minim veniam, quis nostrud exercitation
+                                ullamco laboris nisi ut aliquip ex ea commodo
+                                consequat. Duis aute irure dolor in
+                                reprehenderit in voluptate velit esse cillum
+                                dolore eu fugiat nulla pariatur. Excepteur sint
+                                occaecat cupidatat non proident, sunt in culpa
+                                qui officia deserunt mollit anim id est laborum.
+                            </p>
+                            <div className="flex flex-col justify-start items-start space-y-2">
+                                <ul className="text-left space-y-1 text-lg text-neutral-800">
+                                    <li className="flex">
+                                        <span className="w-24 font-semibold">
+                                            Language:
+                                        </span>
+                                        <span>English</span>
+                                    </li>
+                                    <li className="flex">
+                                        <span className="w-24 font-semibold">
+                                            Platform:
+                                        </span>
+                                        <span>Web</span>
+                                    </li>
+                                    <li className="flex">
+                                        <span className="w-24 font-semibold">
+                                            Genre:
+                                        </span>
+                                        <span>Web3 Auto-Battler</span>
+                                    </li>
+                                    <li className="flex">
+                                        <span className="w-24 font-semibold">
+                                            Currency:
+                                        </span>
+                                        <span>$FLAP</span>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <Link
+                                href="/Game"
+                                className="inline-block bg-black hover:bg-neutral-800 text-white font-semibold px-8 py-4 rounded-2xl shadow-lg transition duration-200"
+                            >
+                                PLAY NOW
+                            </Link>
+                        </div>
+
+                        {/* Right Side (Placeholder image or content block) */}
+                        <div className="flex-1 flex justify-center">
+                            <img
+                                src="/assets/flappymon_thumbnail.png"
+                                alt="Game Preview"
+                                className="w-full max-w-xl rounded-xl shadow-md"
+                            />
+                        </div>
+                    </div>
+                </section>
+
+                {/* Marketplace Section */}
+                <section
+                    className="w-full px-6 md:px-26 py-10 bg-gradient-to-br text-center bg-cover bg-center bg-no-repeat"
+                    style={{
+                        backgroundImage: "url('/assets/bg_2.png')",
+                        backgroundAttachment: "fixed",
+                    }}
+                >
+                    <div className="mx-auto">
+                        <div className="bg-white dark:bg-neutral-100 rounded-xl shadow-lg p-10 py-10 flex flex-col items-center justify-center gap-6">
+                            <h2 className="text-4xl md:text-5xl font-extrabold text-neutral-900">
+                                Flappymon Marketplace
+                            </h2>
+                            <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900">
+                                Smoother trades, better skills.
+                            </h2>
+                            <p className="text-lg md:text-xl text-neutral-700 max-w-2xl">
+                                Trade, buy, and sell Skill NFTs to power up your
+                                Flappymon team. Each skill is unique — boost
+                                your stats, unlock special moves, and gain the
+                                edge in battle.
+                            </p>
+                            <Link
+                                href="/marketplace"
+                                className="inline-block bg-black hover:bg-neutral-800 text-white font-semibold px-8 py-4 rounded-2xl shadow-lg transition duration-200"
+                            >
+                                🛒 Go to Marketplace
+                            </Link>
+                        </div>
                     </div>
                 </section>
 
                 {/* Navigation Hub Section */}
                 <section
-                    className="w-full flex justify-center items-center px-6 py-26 bg-sky-900/90 bg-cover bg-center bg-no-repeat"
+                    className="w-full flex justify-center items-center px-26 py-10 bg-sky-900/90 bg-cover bg-center bg-no-repeat"
                     style={{
                         backgroundImage: "url('/assets/bg_2.png')",
                         backgroundAttachment: "fixed",
                     }}
                 >
-                    <div className="w-full max-w-4xl bg-white dark:bg-neutral-900/70 rounded-3xl shadow-xl border border-neutral-200 dark:border-neutral-800 p-10 flex flex-col gap-6 text-start">
+                    <div className="w-full bg-white dark:bg-neutral-900/70 rounded-3xl shadow-xl border border-neutral-200 dark:border-neutral-800 p-10 flex flex-col gap-6 text-start px-66">
                         <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-4">
                             More Services
                         </h2>
@@ -567,7 +638,7 @@ export default function Home() {
                             className="group flex flex-col gap-1 w-full hover:text-yellow-500 transition duration-150"
                         >
                             <div
-                                className="flex justify-between items-center text-4xl font-black"
+                                className="flex justify-between items-center text-7xl font-black"
                                 style={{
                                     color: "black",
                                     textShadow:
@@ -594,7 +665,7 @@ export default function Home() {
                             className="group flex flex-col gap-1 w-full hover:text-yellow-500 transition duration-150"
                         >
                             <div
-                                className="flex justify-between items-center text-4xl font-black"
+                                className="flex justify-between items-center text-7xl font-black"
                                 style={{
                                     color: "black",
                                     textShadow:
@@ -620,7 +691,7 @@ export default function Home() {
                             className="group flex flex-col gap-1 w-full hover:text-yellow-500 transition duration-150"
                         >
                             <div
-                                className="flex justify-between items-center text-4xl font-black"
+                                className="flex justify-between items-center text-7xl font-black"
                                 style={{
                                     color: "black",
                                     textShadow:
@@ -649,29 +720,128 @@ export default function Home() {
                         backgroundAttachment: "fixed",
                     }}
                 >
-                    <h2 className="text-3xl font-bold text-neutral-800 dark:text-white mb-6">
-                        🚀 Join Our Community
+                    <h2 className="text-5xl font-bold text-neutral-800  mb-6">
+                        Connect with Me
                     </h2>
-                    <p className="text-lg text-neutral-600 dark:text-neutral-300 mb-10 max-w-xl">
+                    <p className="text-lg text-neutral-600 mb-10 max-w-xl">
                         Connect with other Flappymon trainers, share your
                         progress, and get the latest updates.
                     </p>
                     <div className="flex gap-6 flex-wrap justify-center">
-                        <Link
-                            href="mailto:support@flappymon.com"
+                        <a
+                            href="mailto:ashof.z73@gmail.com"
                             className="w-16 h-16 rounded-full bg-neutral-200 dark:bg-neutral-800 flex items-center justify-center text-neutral-800 dark:text-white text-2xl hover:bg-neutral-300 dark:hover:bg-neutral-700 transition"
                             aria-label="Email"
-                        ></Link>
-                        <Link
-                            href="https://discord.gg/your-server"
-                            className="w-16 h-16 rounded-full bg-indigo-500 text-white flex items-center justify-center text-2xl hover:bg-indigo-600 transition"
-                            aria-label="Discord"
-                        ></Link>
-                        <Link
+                        >
+                            <Mail />
+                        </a>
+                        {/* <a
                             href="https://x.com/yourusername"
                             className="w-16 h-16 rounded-full bg-black text-white flex items-center justify-center text-2xl hover:bg-neutral-800 transition"
                             aria-label="X"
-                        ></Link>
+                        ></a> */}
+                        <a
+                            href="https://www.linkedin.com/in/ashof-zulkarnaen-a0863b349/"
+                            className="w-16 h-16 rounded-full bg-blue-600 text-white flex items-center justify-center text-2xl hover:bg-neutral-800 transition"
+                            aria-label="Linkedin"
+                        >
+                            <Linkedin />
+                        </a>
+                        <a
+                            href="https://www.youtube.com/@javakodingdotcom"
+                            className="w-16 h-16 rounded-full bg-red-600 text-white flex items-center justify-center text-2xl hover:bg-neutral-800 transition"
+                            aria-label="Youtube"
+                        >
+                            <Youtube />
+                        </a>
+                    </div>
+                </section>
+
+                <section className="flex justify-center items-center px-[10%] bg-zinc-800 pt-5 w-full">
+                    <div className="flex flex-row justify-center items-stretch w-full gap-5">
+                        {/* Left Section */}
+                        <div className="rounded-tr-md bg-gradient-to-l from-zinc-700 to-zinc-800 p-6 w-[20%] flex flex-col justify-between">
+                            <Link
+                                href="/"
+                                className="text-white text-xl font-bold mb-6"
+                            >
+                                Flappymon
+                            </Link>
+
+                            <div className="flex flex-col justify-start gap-4">
+                                <div className="flex gap-4 text-white">
+                                    <a href="mailto:ashof.z73@gmail.com">
+                                        <Mail size={20} />
+                                    </a>
+                                    <a href="https://www.linkedin.com/in/ashof-zulkarnaen-a0863b349/">
+                                        <Linkedin size={20} />
+                                    </a>
+                                    <a href="https://www.youtube.com/@javakodingdotcom">
+                                        <Youtube size={20} />
+                                    </a>
+                                </div>
+                                <span className="text-sm text-gray-400">
+                                    © {new Date().getFullYear()} Flappymon. All
+                                    rights reserved.
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Vertical Divider */}
+                        {/* <div className="w-px bg-gray-600"></div> */}
+
+                        {/* Right Section */}
+                        <div className="w-[80%] flex flex-col justify-between text-white py-4">
+                            <div className="flex justify-between w-full mb-4">
+                                <span className="font-semibold">News</span>
+                                <span className="font-semibold">Navigator</span>
+                            </div>
+
+                            <div className="w-full h-px bg-gray-700 mb-4"></div>
+
+                            <div className="flex flex-wrap gap-4 text-gray-300 mb-6">
+                                <a
+                                    href="https://flappymon-whitepaper.vercel.app/"
+                                    className="cursor-pointer hover:text-white flex fle-row justify-start items-center gap-1"
+                                >
+                                    WhitePaper
+                                    <MoveUpRight
+                                        size={13}
+                                        className="text-slate-400/75 group-hover:text-yellow-500"
+                                    />
+                                </a>
+                                <Link
+                                    href="/Marketplace"
+                                    className="cursor-pointer hover:text-white flex fle-row justify-start items-center gap-1"
+                                >
+                                    Marketplace
+                                    <MoveUpRight
+                                        size={13}
+                                        className="text-slate-400/75 group-hover:text-yellow-500"
+                                    />
+                                </Link>
+                                <Link
+                                    href="/Inventory"
+                                    className="cursor-pointer hover:text-white flex fle-row justify-start items-center gap-1"
+                                >
+                                    Inventory
+                                    <MoveUpRight
+                                        size={13}
+                                        className="text-slate-400/75 group-hover:text-yellow-500"
+                                    />
+                                </Link>
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-3 text-sm text-gray-400">
+                                <span className="hover:text-white cursor-pointer">
+                                    Terms of Use
+                                </span>
+                                <div className="w-px h-4 bg-gray-600"></div>
+                                <span className="hover:text-white cursor-pointer">
+                                    Privacy Policy
+                                </span>
+                            </div>
+                        </div>
                     </div>
                 </section>
             </div>
