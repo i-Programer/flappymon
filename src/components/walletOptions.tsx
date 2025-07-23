@@ -4,11 +4,13 @@ import { Wallet } from "lucide-react";
 
 export function WalletOptions() {
     const { connectors, connect } = useConnect();
+    const connector = connectors[0]; // take the first one (usually MetaMask)
 
-    return connectors.map((connector) => (
+    if (!connector) return null;
+
+    return (
         <button
             className="p-2 cursor-pointer rounded-md border-2 border-black"
-            key={connector.uid}
             onClick={() => connect({ connector })}
         >
             <div className="flex justify-center items-center gap-x-3">
@@ -18,6 +20,6 @@ export function WalletOptions() {
                 </span>
             </div>
         </button>
-    ));
+    );
 }
 

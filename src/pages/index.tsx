@@ -18,6 +18,8 @@ import { publicClient } from "@/lib/viemClient";
 import Image from "next/image";
 import Link from "next/link";
 import { WalletOptions } from "@/components/walletOptions";
+import { useFlappymonStore } from "@/store/flappymonStore";
+import { useSkillStore } from "@/store/skillStore";
 
 const BACKEND_WALLET = process.env.NEXT_PUBLIC_BACKEND_ADDRESS as `0x${string}`;
 const FLAP_COST = parseUnits("50", 18);
@@ -55,10 +57,14 @@ export default function Home() {
 
                 if (data.flappymons && data.flappymons.length > 0) {
                     setEquippedFlappymon(data.flappymons[0]);
+                    useFlappymonStore
+                        .getState()
+                        .setSelected(data.flappymons[0]);
                 }
 
                 if (data.skills && data.skills.length > 0) {
                     setEquippedSkill(data.skills[0]);
+                    useSkillStore.getState().setSelected(data.skills[0]);
                 }
             } catch (err) {
                 console.error("Failed to fetch wallet data:", err);
@@ -787,35 +793,32 @@ export default function Home() {
                         <div className="rounded-tr-md bg-gradient-to-l from-zinc-700 to-zinc-800 p-6 w-[20%] flex flex-col justify-between">
                             <Link
                                 href="/"
-                                className="text-white text-xl font-bold mb-6"
+                                className="text-white text-2xl font-bold mb-6"
                             >
                                 Flappymon
                             </Link>
 
                             <div className="flex flex-col justify-start gap-4">
-                                <div className="flex gap-4 text-white">
+                                <div className="flex gap-4 text-white text-lg">
                                     <a href="mailto:ashof.z73@gmail.com">
-                                        <Mail size={20} />
+                                        <Mail size={24} />
                                     </a>
                                     <a href="https://www.linkedin.com/in/ashof-zulkarnaen-a0863b349/">
-                                        <Linkedin size={20} />
+                                        <Linkedin size={24} />
                                     </a>
                                     <a href="https://www.youtube.com/@javakodingdotcom">
-                                        <Youtube size={20} />
+                                        <Youtube size={24} />
                                     </a>
                                 </div>
-                                <span className="text-sm text-gray-400">
+                                <span className="text-base text-gray-400">
                                     © {new Date().getFullYear()} Flappymon. All
                                     rights reserved.
                                 </span>
                             </div>
                         </div>
 
-                        {/* Vertical Divider */}
-                        {/* <div className="w-px bg-gray-600"></div> */}
-
                         {/* Right Section */}
-                        <div className="w-[80%] flex flex-col justify-between text-white py-4">
+                        <div className="w-[80%] flex flex-col justify-between text-white py-4 text-lg">
                             <div className="flex justify-between w-full mb-4">
                                 <span className="font-semibold">News</span>
                                 <span className="font-semibold">Navigator</span>
@@ -823,40 +826,40 @@ export default function Home() {
 
                             <div className="w-full h-px bg-gray-700 mb-4"></div>
 
-                            <div className="flex flex-wrap gap-4 text-gray-300 mb-6">
+                            <div className="flex flex-wrap gap-4 text-gray-300 mb-6 text-lg">
                                 <a
                                     href="https://flappymon-whitepaper.vercel.app/"
-                                    className="cursor-pointer hover:text-white flex fle-row justify-start items-center gap-1"
+                                    className="cursor-pointer hover:text-white flex flex-row justify-start items-center gap-1"
                                 >
                                     WhitePaper
                                     <MoveUpRight
-                                        size={13}
+                                        size={15}
                                         className="text-slate-400/75 group-hover:text-yellow-500"
                                     />
                                 </a>
                                 <Link
                                     href="/Marketplace"
-                                    className="cursor-pointer hover:text-white flex fle-row justify-start items-center gap-1"
+                                    className="cursor-pointer hover:text-white flex flex-row justify-start items-center gap-1"
                                 >
                                     Marketplace
                                     <MoveUpRight
-                                        size={13}
+                                        size={15}
                                         className="text-slate-400/75 group-hover:text-yellow-500"
                                     />
                                 </Link>
                                 <Link
                                     href="/Inventory"
-                                    className="cursor-pointer hover:text-white flex fle-row justify-start items-center gap-1"
+                                    className="cursor-pointer hover:text-white flex flex-row justify-start items-center gap-1"
                                 >
                                     Inventory
                                     <MoveUpRight
-                                        size={13}
+                                        size={15}
                                         className="text-slate-400/75 group-hover:text-yellow-500"
                                     />
                                 </Link>
                             </div>
 
-                            <div className="flex flex-wrap items-center gap-3 text-sm text-gray-400">
+                            <div className="flex flex-wrap items-center gap-3 text-base text-gray-400">
                                 <span className="hover:text-white cursor-pointer">
                                     Terms of Use
                                 </span>
