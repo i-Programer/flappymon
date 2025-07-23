@@ -35,8 +35,8 @@ const Navbar: React.FC<NavbarProps> = ({ isConnected, address }) => {
     }, []);
 
     return (
-        <div className="w-full bg-white h-[64px] pl-3 relative">
-            <div className="flex items-center justify-between px-8 relative">
+        <div className="w-full bg-white h-[64px] pl-3">
+            <div className="flex items-center justify-between px-8 relative py-auto h-[100%]">
                 {/* Left side: logo + dropdown */}
                 <div className="flex items-center gap-x-4 text-black relative">
                     <button

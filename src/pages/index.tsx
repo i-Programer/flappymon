@@ -364,11 +364,35 @@ export default function Home() {
             <div className="w-full h-full overflow-hidden relative">
                 {/* Header Section */}
                 {address && !faucetClaimed && (
-                    <div className="absolute top-4 right-4 z-50 bg-sky-900 text-white px-4 py-2 rounded shadow">
-                        <button onClick={claimFaucet} disabled={faucetLoading}>
-                            {faucetLoading ? "Claiming..." : "Claim 500 $FLAP"}
-                        </button>
-                    </div>
+                    <>
+                        <div className="absolute top-4 right-4 z-50 flex flex-col justify-center items-center">
+                            <button
+                                onClick={claimFaucet}
+                                disabled={faucetLoading}
+                                className="bg-sky-900 text-white px-4 py-2 rounded shadow"
+                            >
+                                {faucetLoading
+                                    ? "Claiming..."
+                                    : "Claim 500 $FLAP"}
+                            </button>
+                            <div className="flex flex-col gap-4 mt-4">
+                                <button
+                                    onClick={handleRollGacha}
+                                    className="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-4 py-2 rounded-lg transition flex flex-row justify-start items-center gap-2 w-54"
+                                >
+                                    <Dice5 size={24} color="white" />
+                                    <span>Gacha Flappymon</span>
+                                </button>
+                                <button
+                                    onClick={handleRollSkillGacha}
+                                    className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg transition flex flex-row justify-start items-center gap-2 w-54"
+                                >
+                                    <Target size={24} color="white" />
+                                    <span>Gacha Skills</span>
+                                </button>
+                            </div>
+                        </div>
+                    </>
                 )}
                 <section
                     id="main-section-home"
