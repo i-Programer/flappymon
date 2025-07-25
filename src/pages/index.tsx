@@ -533,7 +533,7 @@ export default function Home() {
                             through our native token <code>$FLAP</code>.
                         </p>
                         <a
-                            href="https://flappymon-whitepaper.vercel.app/"
+                            href="https://flappymonwhitepaper.javakoding.com/"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-block bg-yellow-400 hover:bg-yellow-500 text-black font-semibold px-6 py-3 rounded-2xl shadow-lg transition duration-200"
@@ -831,7 +831,7 @@ export default function Home() {
 
                             <div className="flex flex-wrap gap-4 text-gray-300 mb-6 text-lg">
                                 <a
-                                    href="https://flappymon-whitepaper.vercel.app/"
+                                    href="https://flappymonwhitepaper.javakoding.com/"
                                     className="cursor-pointer hover:text-white flex flex-row justify-start items-center gap-1"
                                 >
                                     WhitePaper

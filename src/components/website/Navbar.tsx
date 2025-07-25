@@ -71,7 +71,7 @@ const Navbar: React.FC<NavbarProps> = ({ isConnected, address }) => {
                                 </li>
                                 <li>
                                     <a
-                                        href="https://flappymon-whitepaper.vercel.app/"
+                                        href="https://flappymonwhitepaper.javakoding.com/"
                                         className="p-3 w-64 flex flex-row gap-x-1 justify-start items-center rounded-3xl shadow-md border border-slate-500/80 text-xl font-bold hover:text-blue-500 transition-colors duration-200"
                                     >
                                         <BookMarked size={30} /> Whitepaper

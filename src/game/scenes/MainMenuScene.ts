@@ -208,7 +208,7 @@ export class MainMenuScene extends Phaser.Scene {
     }).setOrigin(0.5).setInteractive();
 
     whitepaperButton.on('pointerdown', () => {
-      window.open('https://flappymon-whitepaper.vercel.app/', '_blank');
+      window.open('https://flappymonwhitepaper.javakoding.com/', '_blank');
     });
 
     this.handleGachaFail = (e: any) => {
