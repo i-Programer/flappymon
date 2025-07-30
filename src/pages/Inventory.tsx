@@ -408,11 +408,6 @@ const Inventory = () => {
                                 key={`item-${item.tokenId}`}
                                 className="bg-zinc-800 rounded-xl p-4 flex flex-col items-center justify-between"
                             >
-                                <img
-                                    src={`/assets/items/${item.tokenId}.png`} // Make sure your item icons are stored like 0.png, 1.png, etc.
-                                    alt={`Item ${item.tokenId}`}
-                                    className="w-20 h-20 object-contain mb-2"
-                                />
                                 <span className="text-white font-semibold">
                                     {itemNames[item.tokenId]}
                                 </span>
