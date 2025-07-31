@@ -161,5 +161,5 @@ MIT
 
 ## 👤 Author
 
-Built with ✨ by [Dash (a.k.a. Nelozh)](https://your-portfolio-link.com)
+Built with ✨ by Ashof
 
